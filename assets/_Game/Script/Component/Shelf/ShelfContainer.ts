@@ -1,0 +1,366 @@
+import { _decorator, Component, Node, tween, Vec3, Tween, TweenSystem } from 'cc';
+import { ShelfSlot } from './ShelfSlot';
+import { Item, ItemType } from '../Object/Item';
+import { EventListener } from '../../GameEvent/EventListener';
+import { GameEvent } from '../../GameEvent/GameEvent';
+const { ccclass, property } = _decorator;
+
+@ccclass( 'ShelfContainer' )
+export class ShelfContainer extends Component
+{
+    @property( { type: [ ShelfSlot ] } )
+    public shelfSlots: ShelfSlot[];
+
+    public listCurrentItem: Item[] = [];
+
+    static instance: ShelfContainer = null;
+
+    protected onLoad (): void
+    {
+        ShelfContainer.instance = this;
+        EventListener.on( GameEvent.NewItemOnShelf, this.addItemOnShelf, this );
+    }
+
+    protected onDestroy (): void
+    {
+        EventListener.off( GameEvent.NewItemOnShelf, this.addItemOnShelf, this );
+    }
+
+    protected start (): void
+    {
+        this.init();
+    }
+
+    init (): void
+    {
+        this.shelfSlots = this.node.getComponentsInChildren( ShelfSlot );
+        this.listCurrentItem = [];
+    }
+
+    getFreeSlot (): ShelfSlot
+    {
+        for ( const slot of this.shelfSlots )
+        {
+            if ( !slot.linkItem )
+            {
+                return slot;
+            }
+        }
+        return null;
+    }
+
+    addItemOnShelf ( item: Item ): void
+    {
+        this.listCurrentItem.push( item );
+
+        // Sau khi thêm item mới vào kệ, kiểm tra xem có match 3 hay không
+        this.scheduleOnce(() => {
+            this.checkForMatches();
+        }, 0.5); // Đợi 0.5s để item hoàn thành animation di chuyển lên kệ
+    }
+
+    getMatchSlot ( item: Item ): ShelfSlot
+    {
+        // Nếu không có item nào trên kệ, trả về slot đầu tiên
+        if ( this.listCurrentItem.length === 0 )
+        {
+            const freeSlot = this.getFreeSlot();
+            if ( freeSlot )
+            {
+                freeSlot.linkItem = item;
+                return freeSlot;
+            }
+            return null;
+        }
+
+        // Tìm các slot có item cùng loại
+        const sameTypeSlots: ShelfSlot[] = [];
+        const slotTypeMap = new Map<number, ItemType>();
+
+        // Xác định loại item ở từng slot và lưu vào map
+        for ( let i = 0; i < this.shelfSlots.length; i++ )
+        {
+            const slot = this.shelfSlots[ i ];
+            if ( slot.linkItem )
+            {
+                slotTypeMap.set( i, slot.linkItem.itemType );
+                if ( slot.linkItem.itemType === item.itemType )
+                {
+                    sameTypeSlots.push( slot );
+                }
+            }
+        }
+
+        // Nếu không có item nào cùng loại, tìm slot trống đầu tiên
+        if ( sameTypeSlots.length === 0 )
+        {
+            const freeSlot = this.getFreeSlot();
+            if ( freeSlot )
+            {
+                freeSlot.linkItem = item;
+                return freeSlot;
+            }
+            return null;
+        }
+
+        // Tìm vị trí cuối cùng của nhóm item cùng loại
+        let lastSameTypeIndex = -1;
+        for ( let i = 0; i < this.shelfSlots.length; i++ )
+        {
+            const slot = this.shelfSlots[ i ];
+            if ( slot.linkItem && slot.linkItem.itemType === item.itemType )
+            {
+                lastSameTypeIndex = i;
+            }
+        }
+
+        // Nếu slot sau lastSameTypeIndex trống, đặt item vào đó
+        if ( lastSameTypeIndex + 1 < this.shelfSlots.length && !this.shelfSlots[ lastSameTypeIndex + 1 ].linkItem )
+        {
+            const targetSlot = this.shelfSlots[ lastSameTypeIndex + 1 ];
+            targetSlot.linkItem = item;
+            return targetSlot;
+        }
+
+        // Nếu slot sau lastSameTypeIndex đã có item, di chuyển các item tiếp theo
+        if ( lastSameTypeIndex + 1 < this.shelfSlots.length )
+        {
+            // Tìm slot trống cuối cùng để xác định có đủ chỗ không
+            let lastEmptyIndex = -1;
+            for ( let i = this.shelfSlots.length - 1; i >= 0; i-- )
+            {
+                if ( !this.shelfSlots[ i ].linkItem )
+                {
+                    lastEmptyIndex = i;
+                    break;
+                }
+            }
+
+            // Nếu không có slot trống nào, không thể thêm item mới
+            if ( lastEmptyIndex === -1 )
+            {
+                return null;
+            }
+
+            // Di chuyển các item từ lastSameTypeIndex + 1 đến lastEmptyIndex
+            this.moveItemsRight( lastSameTypeIndex + 1, lastEmptyIndex );
+
+            // Đặt item mới vào vị trí sau lastSameTypeIndex
+            const targetSlot = this.shelfSlots[ lastSameTypeIndex + 1 ];
+            targetSlot.linkItem = item;
+            return targetSlot;
+        }
+
+        // Nếu không tìm được slot phù hợp, trả về slot trống đầu tiên
+        const freeSlot = this.getFreeSlot();
+        if ( freeSlot )
+        {
+            freeSlot.linkItem = item;
+            return freeSlot;
+        }
+
+        return null;
+    }
+
+    /**
+     * Di chuyển các item từ startIndex đến endIndex sang phải 1 vị trí
+     * @param startIndex Vị trí bắt đầu
+     * @param endIndex Vị trí kết thúc
+     */
+    private moveItemsRight ( startIndex: number, endIndex: number ): void
+    {
+        // Di chuyển từ phải qua trái để tránh ghi đè
+        for ( let i = endIndex; i >= startIndex; i-- )
+        {
+            const currentSlot = this.shelfSlots[ i ];
+            const nextSlot = this.shelfSlots[ i + 1 ];
+
+            if ( currentSlot.linkItem )
+            {
+                // Thực hiện tween animation cho việc di chuyển
+                const item = currentSlot.linkItem;
+                const endPos = nextSlot.node.getWorldPosition();
+
+                // Thiết lập liên kết mới
+                nextSlot.linkItem = item;
+                currentSlot.linkItem = null;
+
+                // Animation di chuyển item
+                tween( item.node )
+                    .to( 0.3, { worldPosition: new Vec3( endPos.x, endPos.y, endPos.z ) }, { easing: 'bounceOut' } )
+                    .start();
+            }
+        }
+    }
+
+    /**
+     * Kiểm tra xem có 3 item cùng loại liên tiếp trên shelf hay không
+     */
+    private checkForMatches (): void
+    {
+        // Tạo mảng lưu trữ loại item tại mỗi slot
+        const slotTypes: (ItemType | null)[] = [];
+        
+        // Lấy thông tin loại item tại mỗi slot
+        for (let i = 0; i < this.shelfSlots.length; i++) {
+            const slot = this.shelfSlots[i];
+            slotTypes.push(slot.linkItem ? slot.linkItem.itemType : null);
+        }
+        
+        // Kiểm tra 3 item liên tiếp cùng loại
+        for (let i = 0; i < slotTypes.length - 2; i++) {
+            // Kiểm tra nếu 3 slot liên tiếp có cùng loại item không null
+            if (slotTypes[i] !== null && 
+                slotTypes[i] === slotTypes[i + 1] && 
+                slotTypes[i] === slotTypes[i + 2]) {
+                
+                // Tìm thấy 3 item cùng loại liên tiếp
+                this.handleMatchedItems(i, i + 1, i + 2);
+                
+                // Thoát vòng lặp sau khi xử lý trận đầu tiên
+                // Có thể gọi lại checkForMatches sau để kiểm tra các match khác
+                break;
+            }
+        }
+    }
+
+    /**
+     * Xử lý khi có 3 item cùng loại liên tiếp
+     * @param index1 Vị trí item thứ nhất
+     * @param index2 Vị trí item giữa (đích đến của tween)
+     * @param index3 Vị trí item thứ ba
+     */
+    private handleMatchedItems (index1: number, index2: number, index3: number): void
+    {
+        const slot1 = this.shelfSlots[index1];
+        const slot2 = this.shelfSlots[index2]; // slot ở giữa, đích đến của tween
+        const slot3 = this.shelfSlots[index3];
+        
+        // Kiểm tra xem 3 slot có item không
+        if (!slot1.linkItem || !slot2.linkItem || !slot3.linkItem) {
+            return;
+        }
+        
+        // Lưu các item trước khi tween để xóa sau
+        const item1 = slot1.linkItem;
+        const item2 = slot2.linkItem;
+        const item3 = slot3.linkItem;
+        
+        // Vị trí đích của tween là vị trí item giữa
+        const targetPos = slot2.node.getWorldPosition();
+        
+        // Đếm số tween đã hoàn thành
+        let tweenCompleted = 0;
+        
+        // Tween item thứ nhất vào vị trí giữa
+        const tween1 = tween(item1.node)
+            .to(0.3, { worldPosition: new Vec3(targetPos.x, targetPos.y, targetPos.z) }, { easing: 'quartOut' })
+            .call(() => {
+                tweenCompleted++;
+                // Khi cả 2 tween hoàn thành, xóa cả 3 item
+                if (tweenCompleted >= 2) {
+                    this.removeMatchedItems(item1, item2, item3, index1, index2, index3);
+                }
+            });
+            
+        // Tween item thứ ba vào vị trí giữa
+        const tween3 = tween(item3.node)
+            .to(0.3, { worldPosition: new Vec3(targetPos.x, targetPos.y, targetPos.z) }, { easing: 'quartOut' })
+            .call(() => {
+                tweenCompleted++;
+                // Khi cả 2 tween hoàn thành, xóa cả 3 item
+                if (tweenCompleted >= 2) {
+                    this.removeMatchedItems(item1, item2, item3, index1, index2, index3);
+                }
+            });
+        
+        // Bắt đầu các tween
+        tween1.start();
+        tween3.start();
+    }
+
+    /**
+     * Xóa 3 item đã match và làm sạch các tham chiếu
+     * @param item1 Item thứ nhất
+     * @param item2 Item giữa
+     * @param item3 Item thứ ba
+     * @param index1 Vị trí item thứ nhất
+     * @param index2 Vị trí item giữa
+     * @param index3 Vị trí item thứ ba
+     */
+    private removeMatchedItems(item1: Item, item2: Item, item3: Item, index1: number, index2: number, index3: number): void
+    {
+        // Xóa khỏi listCurrentItem
+        this.listCurrentItem = this.listCurrentItem.filter(item => 
+            item !== item1 && item !== item2 && item !== item3
+        );
+        
+        // Clear liên kết từ slots
+        this.shelfSlots[index1].linkItem = null;
+        this.shelfSlots[index2].linkItem = null;
+        this.shelfSlots[index3].linkItem = null;
+        
+        // Hiệu ứng biến mất và xóa các node
+        this.fadeOutAndDestroy(item1.node);
+        this.fadeOutAndDestroy(item2.node);
+        this.fadeOutAndDestroy(item3.node);
+        
+        // Di chuyển các item còn lại để lấp đầy các slot trống
+        this.compactItems();
+        
+        // Kiểm tra xem có match khác không sau khi di chuyển
+        this.scheduleOnce(() => {
+            this.checkForMatches();
+        }, 0.5);
+    }
+
+    /**
+     * Hiệu ứng fade out và xóa node
+     */
+    private fadeOutAndDestroy(node: Node): void
+    {
+        tween(node)
+            .to(0.3, { scale: new Vec3(0, 0, 0) }, { easing: 'backIn' })
+            .call(() => {
+                node.destroy();
+            })
+            .start();
+    }
+
+    /**
+     * Di chuyển các item để lấp đầy các slot trống sau khi match
+     */
+    private compactItems(): void
+    {
+        // Mảng lưu các item còn lại theo thứ tự hiện tại
+        const remainingItems: Item[] = [];
+        
+        // Thu thập tất cả item còn lại trên shelf theo thứ tự hiện tại
+        for (const slot of this.shelfSlots) {
+            if (slot.linkItem) {
+                remainingItems.push(slot.linkItem);
+                slot.linkItem = null; // Xóa liên kết cũ
+            }
+        }
+        
+        // Không sắp xếp lại theo loại nữa để giữ nguyên thứ tự nhóm
+        
+        // Lấp đầy các slot từ trái qua phải với các item còn lại
+        for (let i = 0; i < remainingItems.length; i++) {
+            const slot = this.shelfSlots[i];
+            const item = remainingItems[i];
+            
+            // Thiết lập liên kết mới
+            slot.linkItem = item;
+            
+            // Di chuyển item đến vị trí mới
+            const targetPos = slot.node.getWorldPosition();
+            tween(item.node)
+                .to(0.3, { worldPosition: new Vec3(targetPos.x, targetPos.y, targetPos.z) }, { easing: 'bounceOut' })
+                .start();
+        }
+    }
+
+}
+
+

@@ -1,0 +1,33 @@
+{
+  "__version__": "1.0.6",
+  "general": {
+    "designResolution": {
+      "width": 1080,
+      "height": 1920,
+      "fitHeight": true,
+      "fitWidth": false
+    },
+    "highQuality": true
+  },
+  "custom_joint_texture_layouts": [],
+  "physics": {
+    "gravity": {
+      "y": -9.8
+    },
+    "collisionGroups": [
+      {
+        "index": 1,
+        "name": "SideWall"
+      },
+      {
+        "index": 2,
+        "name": "Item"
+      }
+    ],
+    "collisionMatrix": {
+      "0": 1,
+      "1": 4,
+      "2": 6
+    }
+  }
+}
