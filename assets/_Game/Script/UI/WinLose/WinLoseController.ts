@@ -10,6 +10,8 @@ export class WinLoseController extends Component
     winNode: Node = null;
     @property( Node )
     loseNode: Node = null;
+    @property( Node )
+    disableInput: Node = null;
 
     static instance: WinLoseController = null;
 
@@ -34,7 +36,11 @@ export class WinLoseController extends Component
 
     onGameLose (): void
     {
-        this.loseNode.active = true;
+        this.disableInput.active = true;
+        this.scheduleOnce( () =>
+        {
+            this.loseNode.active = true;
+        }, 1 );
     }
 }
 

@@ -29,6 +29,7 @@ export class MovingState implements IState
         //Logic
         EventListener.emit( GameEvent.NewItemOnShelf, item );
         let slot = ShelfContainer.instance.getMatchSlot( item );
+        ShelfContainer.instance.CheckGameLose();
 
         //Animation
         let shelfScale = new Vec3( 0.75, 0.75, 0.75 );
