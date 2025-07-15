@@ -16,7 +16,7 @@ export class OnShelfState implements IState
         console.log( `${ item.node.name } đã vào trạng thái OnShelf` );
         //reset góc
         item.node.setRotationFromEuler( 0, 0, 0 );
-        ShelfContainer.instance.checkForMatches();
+
     }
 
     public exit ( item: Item ): void

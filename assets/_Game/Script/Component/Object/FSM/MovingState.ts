@@ -5,6 +5,7 @@ import { ShelfContainer } from '../../Shelf/ShelfContainer';
 import { BezierTweenWorld } from '../../../Tween/TweenExtension';
 import { EventListener } from '../../../GameEvent/EventListener';
 import { GameEvent } from '../../../GameEvent/GameEvent';
+import { ShelfSlot } from '../../Shelf/ShelfSlot';
 const { ccclass, property } = _decorator;
 
 @ccclass( 'MovingState' )
@@ -27,44 +28,14 @@ export class MovingState implements IState
         } );
 
         //Logic
-        EventListener.emit( GameEvent.NewItemOnShelf, item );
-        let slot = ShelfContainer.instance.getMatchSlot( item );
-        ShelfContainer.instance.CheckGameLose();
+        let slotIndex = ShelfContainer.instance.getSlotAndCheckMatch( item );
+        let index = slotIndex.index + 1;
+        let slot = ShelfContainer.instance.listShelfSlots[ index ];
+        item.currentShelfIndexSlot = index;
+        this.animationMove( item, slot );
+        ShelfContainer.instance.onGetNewItem( item, item.currentShelfIndexSlot );
 
         //Animation
-        let shelfScale = new Vec3( 0.75, 0.75, 0.75 );
-        tween( item.node )
-            .to( 0.3, { scale: shelfScale }, { easing: 'bounceOut' } )
-            .start()
-        let startPos = item.node.getWorldPosition();
-        let endPos = slot.node.getWorldPosition();
-        
-        // Tính trung điểm giữa startPos và endPos
-        let midPoint = new Vec3();
-        Vec3.lerp(midPoint, startPos, endPos, 0.5);
-        
-        // Tính vector có hướng từ startPos đến endPos
-        let direction = new Vec3();
-        Vec3.subtract(direction, endPos, startPos);
-        
-        // Tạo offset với chiều cao y=10 và lùi về phía startPos
-        let offset = new Vec3(0, 15, 0);
-        
-        // Chuẩn hóa vector hướng
-        Vec3.normalize(direction, direction);
-        
-        // Thay vì cộng thêm theo hướng endPos, trừ đi để lùi về phía startPos
-        // Dùng -1 để lùi lại một khoảng (có thể điều chỉnh số này)
-        Vec3.scaleAndAdd(offset, offset, direction, -2);
-        
-        // Tính điểm bezier bằng cách cộng offset vào trung điểm
-        let bezierPos = new Vec3();
-        Vec3.add(bezierPos, midPoint, offset);
-
-        BezierTweenWorld( item.node, 0.3, startPos, bezierPos, endPos ).then( () =>
-        {
-            item.onShelf();
-        } );
 
     }
 
@@ -80,5 +51,30 @@ export class MovingState implements IState
     public getName (): string
     {
         return this.name;
+    }
+
+    public animationMove ( item: Item, slot: ShelfSlot ): void
+    {
+        let shelfScale = new Vec3( 0.75, 0.75, 0.75 );
+        tween( item.node )
+            .to( 0.3, { scale: shelfScale }, { easing: 'bounceOut' } )
+            .start()
+        let startPos = item.node.getWorldPosition();
+        let endPos = slot.node.getWorldPosition();
+        let midPoint = new Vec3();
+        Vec3.lerp( midPoint, startPos, endPos, 0.5 );
+        let direction = new Vec3();
+        Vec3.subtract( direction, endPos, startPos );
+        let offset = new Vec3( 0, 15, 0 );
+        Vec3.normalize( direction, direction );
+        Vec3.scaleAndAdd( offset, offset, direction, -2 );
+        let bezierPos = new Vec3();
+        Vec3.add( bezierPos, midPoint, offset );
+
+        BezierTweenWorld( item.node, 0.3, startPos, bezierPos, endPos ).then( () =>
+        {
+            item.onShelf();
+        } );
+
     }
 }

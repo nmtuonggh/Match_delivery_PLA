@@ -4,6 +4,8 @@ import { PickedState } from './FSM/PickedState';
 import { MovingState } from './FSM/MovingState';
 import { OnShelfState } from './FSM/OnShelfState';
 import { StateMachine } from './FSM/StateMachine';
+import { ShelfContainer } from '../Shelf/ShelfContainer';
+import { BezierTweenWorld } from '../../Tween/TweenExtension';
 const { ccclass, property } = _decorator;
 
 /**
@@ -22,7 +24,6 @@ export enum ItemType
     Watermelon = 'Watermelon',
     Apple = 'Apple',
     Gio = 'Gio',
-
 }
 
 @ccclass( 'Item' )
@@ -34,9 +35,14 @@ export class Item extends Component
     @property( { type: Enum( ItemType ) } )
     public itemType: ItemType = ItemType.Watermelon;
     //#endregion
+    //#region Public fields
+    public currentShelfIndexSlot: number = -1;
+    //#endregion
 
+    //#region Private fields
     private stateMachine: StateMachine;
     private _isPickable: boolean = true;
+    //#endregion
 
     //#region Property
     public get isPickable (): boolean
@@ -103,5 +109,47 @@ export class Item extends Component
     public getCurrentState (): string
     {
         return this.stateMachine.getCurrentStateName();
+    }
+
+    public async sortItem ( newIndexPos: number ): Promise<void>
+    {
+        window.item = this;
+        let currentIndex = this.currentShelfIndexSlot;
+        let delay = newIndexPos > currentIndex ? 0 : currentIndex * 0.05;
+        if ( delay > 0 )
+        {
+            await new Promise( resolve => setTimeout( resolve, delay * 1000 ) );
+        }
+
+        if ( newIndexPos > currentIndex )
+        {
+            for ( let i = newIndexPos; i > currentIndex; i-- )
+            {
+                let targetSlotPos = this.getSlotPosition( i );
+                let startPos = this.node.worldPosition;
+                let endPos = targetSlotPos;
+
+                const controlPoint = new Vec3(
+                    ( startPos.x + endPos.x ) / 2,
+                    Math.max( startPos.y, endPos.y ) + 1, // +1 là chiều cao nhảy, điều chỉnh phù hợp
+                    ( startPos.z + endPos.z ) / 2
+                );
+
+                await BezierTweenWorld(
+                    this.node,
+                    0.15, // Thời gian tương đương với InGameController.sortTime
+                    startPos,
+                    controlPoint,
+                    endPos
+                );
+
+                this.currentShelfIndexSlot = i;
+            }
+        }
+    }
+
+    public getSlotPosition ( index: number ): Vec3
+    {
+        return ShelfContainer.instance.listShelfSlots[ index ].node.worldPosition;
     }
 }
