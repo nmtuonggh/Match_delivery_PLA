@@ -14,6 +14,7 @@ export class ShelfContainer extends Component
     //#endregion
 
     static instance: ShelfContainer = null;
+    public isMatching: boolean = false;
 
     //#region Private fields
     private currentItemCount: number = 0;
@@ -59,12 +60,10 @@ export class ShelfContainer extends Component
 
     public onGetNewItem ( item: Item , index: number , canMatched: boolean ): void
     {
+    
         let checkMatchedIndex = index;
-        if ( canMatched )
-        {
-            this.listPickedItem
-        }
         this.currentItemCount++;
+
         if ( checkMatchedIndex === 0 )
         {
             this.listPickedItem.push( item );
@@ -75,9 +74,13 @@ export class ShelfContainer extends Component
             this.listPickedItem.splice( checkMatchedIndex, 0, item );
         }
 
-
-        //currentShelfIndexSlot = index cua item trong listPickedItem
-        this.sortItemOnShelf();
+        // Sort item trước khi check match
+        this.sortItemOnShelf().then(() => {
+            // Sau khi sort xong, kiểm tra match nếu có thể
+            if (canMatched) {
+                this.checkAndDestroyMatched(checkMatchedIndex);
+            }
+        });
     }
 
     
@@ -94,13 +97,79 @@ export class ShelfContainer extends Component
         }
         return item.itemType === this.listPickedItem[ index ].itemType;
     }
-    private async sortItemOnShelf ()
+    private async sortItemOnShelf (): Promise<void>
     {
         for ( let i = this.currentItemCount - 1; i >= 0; i-- )
         {
             let item = this.listPickedItem[ i ];
             await item.sortItem( i );
         }
+    }
+
+    private async checkAndDestroyMatched(itemIndex: number): Promise<void> {
+        if (itemIndex < 0 || itemIndex >= this.listPickedItem.length || this.listPickedItem.length < 3) {
+            return;
+        }
+        this.isMatching = true;
+
+        const currentItemType = this.listPickedItem[itemIndex].itemType;
+        
+        // Kiểm tra 3 item liên tiếp có cùng loại
+        // Theo yêu cầu, chúng ta match với 2 item phía trước
+        if (itemIndex >= 2 && 
+            this.listPickedItem[itemIndex-1]?.itemType === currentItemType &&
+            this.listPickedItem[itemIndex-2]?.itemType === currentItemType) {
+            
+            // Lấy 3 item cần destroy
+            const itemsToDestroy = [
+                this.listPickedItem[itemIndex-2],
+                this.listPickedItem[itemIndex-1],
+                this.listPickedItem[itemIndex]
+            ];
+            
+            // Xóa khỏi danh sách
+            this.listPickedItem.splice(itemIndex-2, 3);
+            this.currentItemCount -= 3;
+            
+            // Animation destroy
+            await this.destroyMatchedItems(itemsToDestroy);
+            
+            // Sort lại sau khi destroy
+            await this.sortItemOnShelf();
+        }
+        
+        // Reset cờ match
+        this.isMatching = false;
+    }
+    
+    /**
+     * Xử lý việc destroy các item đã match
+     * @param items danh sách item cần destroy
+     */
+    private async destroyMatchedItems(items: Item[]): Promise<void> {
+        // Tạo promise để đảm bảo tất cả animation hoàn thành trước khi tiếp tục
+        const destroyPromises = items.map(item => {
+            return new Promise<void>((resolve) => {
+                // Hiệu ứng scale xuống 0 trước khi destroy
+                tween(item.node)
+                    .to(0.3, { scale: new Vec3(0, 0, 0) }, { easing: 'bounceIn' })
+                    .call(() => {
+                        item.node.destroy();
+                        resolve();
+                    })
+                    .start();
+            });
+        });
+        
+        // Chờ tất cả animation hoàn thành
+        await Promise.all(destroyPromises);
+    }
+
+    /**
+     * Kiểm tra xem có đang trong quá trình match không
+     */
+    public isInMatching(): boolean {
+        return this.isMatching;
     }
 
     //#endregion

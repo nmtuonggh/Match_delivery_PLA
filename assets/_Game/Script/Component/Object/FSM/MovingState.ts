@@ -33,7 +33,7 @@ export class MovingState implements IState
         let slot = ShelfContainer.instance.listShelfSlots[ index ];
         item.currentShelfIndexSlot = index;
         this.animationMove( item, slot );
-        ShelfContainer.instance.onGetNewItem( item, item.currentShelfIndexSlot );
+        ShelfContainer.instance.onGetNewItem( item, item.currentShelfIndexSlot , slotIndex.canMatched );
 
         //Animation
 

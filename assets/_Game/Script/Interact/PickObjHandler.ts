@@ -1,5 +1,6 @@
 import { _decorator, Camera, Component, EventTouch, geometry, Input, input, log, Node, PhysicsSystem } from 'cc';
 import { Item } from '../Component/Object/Item';
+import { ShelfContainer } from '../Component/Shelf/ShelfContainer';
 const { ccclass, property } = _decorator;
 
 @ccclass( 'PickObjHandler' )
@@ -34,7 +35,7 @@ export class PickObjHandler extends Component
     {
         // Xóa object hiện tại khi kết thúc chạm
         // this.stopPick(this.currentItem);
-        if ( this.currentItem )
+        if ( this.currentItem && !ShelfContainer.instance.isMatching )
         {
             this.currentItem.getComponent( Item ).moveToShelf();
         }

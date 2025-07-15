@@ -88,8 +88,9 @@ export class Item extends Component
 
     public pick (): boolean
     {
-        if ( !this._isPickable ) return false;
-        return this.stateMachine.changeState( ItemStateType.PICKED );
+        // Nếu item không pickable hoặc đang trong quá trình match thì không cho pick
+        if (!this._isPickable || ShelfContainer.instance.isInMatching()) return false;
+        return this.stateMachine.changeState(ItemStateType.PICKED);
     }
     public drop (): boolean
     {
