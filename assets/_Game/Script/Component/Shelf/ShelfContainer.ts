@@ -58,9 +58,9 @@ export class ShelfContainer extends Component
         return result;
     }
 
-    public onGetNewItem ( item: Item , index: number , canMatched: boolean ): void
+    public onGetNewItem ( item: Item, index: number, canMatched: boolean ): void
     {
-    
+
         let checkMatchedIndex = index;
         this.currentItemCount++;
 
@@ -75,15 +75,17 @@ export class ShelfContainer extends Component
         }
 
         // Sort item trước khi check match
-        this.sortItemOnShelf().then(() => {
+        this.sortItemOnShelf().then( () =>
+        {
             // Sau khi sort xong, kiểm tra match nếu có thể
-            if (canMatched) {
-                this.checkAndDestroyMatched(checkMatchedIndex);
+            if ( canMatched )
+            {
+                this.checkAndDestroyMatched( checkMatchedIndex );
             }
-        });
+        } );
     }
 
-    
+
 
     //#endregion
 
@@ -105,70 +107,87 @@ export class ShelfContainer extends Component
             await item.sortItem( i );
         }
     }
+    private async sortItemAfterMatch (): Promise<void>
+    {
+        console.log( this.listPickedItem.length );
+        for ( let i = 0; i < this.currentItemCount; i++ )
+        {
+            let item = this.listPickedItem[ i ];
+            item.sortItem( i );
+        }
+    }
 
-    private async checkAndDestroyMatched(itemIndex: number): Promise<void> {
-        if (itemIndex < 0 || itemIndex >= this.listPickedItem.length || this.listPickedItem.length < 3) {
+    private async checkAndDestroyMatched ( itemIndex: number ): Promise<void>
+    {
+        if ( itemIndex < 0 || itemIndex >= this.listPickedItem.length || this.listPickedItem.length < 3 )
+        {
             return;
         }
         this.isMatching = true;
 
-        const currentItemType = this.listPickedItem[itemIndex].itemType;
-        
+        const currentItemType = this.listPickedItem[ itemIndex ].itemType;
+
         // Kiểm tra 3 item liên tiếp có cùng loại
         // Theo yêu cầu, chúng ta match với 2 item phía trước
-        if (itemIndex >= 2 && 
-            this.listPickedItem[itemIndex-1]?.itemType === currentItemType &&
-            this.listPickedItem[itemIndex-2]?.itemType === currentItemType) {
-            
+        if ( itemIndex >= 2 &&
+            this.listPickedItem[ itemIndex - 1 ]?.itemType === currentItemType &&
+            this.listPickedItem[ itemIndex - 2 ]?.itemType === currentItemType )
+        {
+
             // Lấy 3 item cần destroy
             const itemsToDestroy = [
-                this.listPickedItem[itemIndex-2],
-                this.listPickedItem[itemIndex-1],
-                this.listPickedItem[itemIndex]
+                this.listPickedItem[ itemIndex - 2 ],
+                this.listPickedItem[ itemIndex - 1 ],
+                this.listPickedItem[ itemIndex ]
             ];
-            
+
             // Xóa khỏi danh sách
-            this.listPickedItem.splice(itemIndex-2, 3);
+            this.listPickedItem.splice( itemIndex - 2, 3 );
             this.currentItemCount -= 3;
-            
+
             // Animation destroy
-            await this.destroyMatchedItems(itemsToDestroy);
-            
+            await this.destroyMatchedItems( itemsToDestroy );
+
             // Sort lại sau khi destroy
-            await this.sortItemOnShelf();
+            await this.sortItemAfterMatch();
         }
-        
+
         // Reset cờ match
         this.isMatching = false;
     }
-    
+
     /**
      * Xử lý việc destroy các item đã match
      * @param items danh sách item cần destroy
      */
-    private async destroyMatchedItems(items: Item[]): Promise<void> {
+    private async destroyMatchedItems ( items: Item[] ): Promise<void>
+    {
         // Tạo promise để đảm bảo tất cả animation hoàn thành trước khi tiếp tục
-        const destroyPromises = items.map(item => {
-            return new Promise<void>((resolve) => {
+        const destroyPromises = items.map( item =>
+        {
+            return new Promise<void>( ( resolve ) =>
+            {
                 // Hiệu ứng scale xuống 0 trước khi destroy
-                tween(item.node)
-                    .to(0.3, { scale: new Vec3(0, 0, 0) }, { easing: 'bounceIn' })
-                    .call(() => {
+                tween( item.node )
+                    .to( 0.3, { scale: new Vec3( 0, 0, 0 ) }, { easing: 'bounceIn' } )
+                    .call( () =>
+                    {
                         item.node.destroy();
                         resolve();
-                    })
+                    } )
                     .start();
-            });
-        });
-        
+            } );
+        } );
+
         // Chờ tất cả animation hoàn thành
-        await Promise.all(destroyPromises);
+        await Promise.all( destroyPromises );
     }
 
     /**
      * Kiểm tra xem có đang trong quá trình match không
      */
-    public isInMatching(): boolean {
+    public isInMatching (): boolean
+    {
         return this.isMatching;
     }
 

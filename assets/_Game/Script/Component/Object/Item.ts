@@ -89,8 +89,8 @@ export class Item extends Component
     public pick (): boolean
     {
         // Nếu item không pickable hoặc đang trong quá trình match thì không cho pick
-        if (!this._isPickable || ShelfContainer.instance.isInMatching()) return false;
-        return this.stateMachine.changeState(ItemStateType.PICKED);
+        if ( !this._isPickable || ShelfContainer.instance.isInMatching() ) return false;
+        return this.stateMachine.changeState( ItemStateType.PICKED );
     }
     public drop (): boolean
     {
@@ -145,6 +145,30 @@ export class Item extends Component
                 );
 
                 this.currentShelfIndexSlot = i;
+            }
+        } else
+        {
+            for ( let i = currentIndex; i > newIndexPos; i-- )
+            {
+                let targetSlotPos = this.getSlotPosition( i - 1 );
+                let startPos = this.node.worldPosition;
+                let endPos = targetSlotPos;
+
+                const controlPoint = new Vec3(
+                    ( startPos.x + endPos.x ) / 2,
+                    Math.max( startPos.y, endPos.y ) + 1, // +1 là chiều cao nhảy, điều chỉnh phù hợp
+                    ( startPos.z + endPos.z ) / 2
+                );
+
+                await BezierTweenWorld(
+                    this.node,
+                    0.15, // Thời gian tương đương với InGameController.sortTime
+                    startPos,
+                    controlPoint,
+                    endPos
+                );
+
+                this.currentShelfIndexSlot = i - 1;
             }
         }
     }
