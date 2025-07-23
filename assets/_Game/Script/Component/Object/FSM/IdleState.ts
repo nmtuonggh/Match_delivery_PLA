@@ -12,12 +12,12 @@ export class IdleState implements IState
 
     public enter ( item: Item ): void
     {
-        console.log( `${ item.node.name } đã vào trạng thái Idle` );
+       // console.log( `${ item.node.name } đã vào trạng thái Idle` );
     }
 
     public exit ( item: Item ): void
     {
-        console.log( `${ item.node.name } đã rời khỏi trạng thái Idle` );
+       // console.log( `${ item.node.name } đã rời khỏi trạng thái Idle` );
     }
 
     public update ( item: Item, deltaTime: number ): void

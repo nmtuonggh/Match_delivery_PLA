@@ -6,6 +6,7 @@ import { OnShelfState } from './FSM/OnShelfState';
 import { StateMachine } from './FSM/StateMachine';
 import { ShelfContainer } from '../Shelf/ShelfContainer';
 import { BezierTweenWorld } from '../../Tween/TweenExtension';
+import { VariableConfig } from '../../Config/VariableConfig';
 const { ccclass, property } = _decorator;
 
 /**
@@ -38,7 +39,9 @@ export class Item extends Component
     //#region Public fields
     public currentShelfIndexSlot: number = -1;
     //public animationMoveDone: boolean = false;
+    public sortPromise: Promise<void> | null = null;
     public animationPromise: Promise<void> | null = null;
+
     //#endregion
 
     //#region Private fields
@@ -118,10 +121,10 @@ export class Item extends Component
     {
         window.item = this;
         let currentIndex = this.currentShelfIndexSlot;
-        let delay = newIndexPos > currentIndex ? 0 : currentIndex * 0.05;
+        let delay = newIndexPos > currentIndex ? 0 : currentIndex * 0.001;
         if ( delay > 0 )
         {
-            await new Promise( resolve => setTimeout( resolve, delay * 1000 ) );
+            await new Promise( resolve => setTimeout( resolve, delay * 500 ) );
         }
 
         if ( newIndexPos > currentIndex )
@@ -138,15 +141,15 @@ export class Item extends Component
                     ( startPos.z + endPos.z ) / 2
                 );
 
-                this.animationPromise = BezierTweenWorld(
+                this.sortPromise = BezierTweenWorld(
                     this.node,
-                    0.15, // Thời gian tương đương với InGameController.sortTime
+                    VariableConfig.SORT_TIME, // Thời gian tương đương với InGameController.sortTime
                     startPos,
                     controlPoint,
                     endPos
                 );
-                await this.animationPromise;
-                //this.currentShelfIndexSlot = i;
+                await this.sortPromise;
+                this.currentShelfIndexSlot = i;
             }
         } else
         {
@@ -162,18 +165,18 @@ export class Item extends Component
                     ( startPos.z + endPos.z ) / 2
                 );
 
-                this.animationPromise = BezierTweenWorld(
+                this.sortPromise = BezierTweenWorld(
                     this.node,
-                    0.15, // Thời gian tương đương với InGameController.sortTime
+                    VariableConfig.SORT_TIME, // Thời gian tương đương với InGameController.sortTime
                     startPos,
                     controlPoint,
                     endPos
                 );
-                await this.animationPromise;
-                //this.currentShelfIndexSlot = i - 1;
+                await this.sortPromise;
+                this.currentShelfIndexSlot = i - 1;
             }
         }
-        this.currentShelfIndexSlot = newIndexPos;
+        //this.currentShelfIndexSlot = newIndexPos;
     }
 
     public getSlotPosition ( index: number ): Vec3

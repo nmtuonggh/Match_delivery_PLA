@@ -6,6 +6,7 @@ import { BezierTweenWorld } from '../../../Tween/TweenExtension';
 import { EventListener } from '../../../GameEvent/EventListener';
 import { GameEvent } from '../../../GameEvent/GameEvent';
 import { ShelfSlot } from '../../Shelf/ShelfSlot';
+import { VariableConfig } from '../../../Config/VariableConfig';
 const { ccclass, property } = _decorator;
 
 @ccclass( 'MovingState' )
@@ -34,7 +35,7 @@ export class MovingState implements IState
 
         ShelfContainer.instance.onGetNewItem( item, item.currentShelfIndexSlot );
         //await
-        ShelfContainer.instance.checkSortItem( slotIndex.canMatched, item.currentShelfIndexSlot , item );
+        ShelfContainer.instance.checkSortItem( slotIndex.canMatched, item.currentShelfIndexSlot, item );
 
         this.animationMove( item, slot );
 
@@ -44,7 +45,7 @@ export class MovingState implements IState
 
     public exit ( item: Item ): void
     {
-        console.log( `${ item.node.name } đã rời khỏi trạng thái Moving` );
+
     }
 
     public update ( item: Item, deltaTime: number ): void
@@ -60,7 +61,7 @@ export class MovingState implements IState
     {
         let shelfScale = new Vec3( 0.75, 0.75, 0.75 );
         tween( item.node )
-            .to( 0.3, { scale: shelfScale }, { easing: 'bounceOut' } )
+            .to( VariableConfig.ANIMATIONITEM_TIME, { scale: shelfScale }, { easing: 'bounceOut' } )
             .start()
         let startPos = item.node.getWorldPosition();
         let endPos = slot.node.getWorldPosition();
@@ -74,8 +75,12 @@ export class MovingState implements IState
         let bezierPos = new Vec3();
         Vec3.add( bezierPos, midPoint, offset );
 
-        item.animationPromise = BezierTweenWorld( item.node, 0.3, startPos, bezierPos, endPos );
-        await item.animationPromise;
-        item.onShelf();
+        item.animationPromise = BezierTweenWorld( item.node, VariableConfig.ANIMATIONITEM_TIME, startPos, bezierPos, endPos );
+        ShelfContainer.instance.listAnimationPromise.push( item.animationPromise );
+        item.animationPromise.then( () =>
+        {
+            item.onShelf();
+            ShelfContainer.instance.listAnimationPromise.splice( ShelfContainer.instance.listAnimationPromise.indexOf( item.animationPromise ), 1 );
+        } );
     }
 }

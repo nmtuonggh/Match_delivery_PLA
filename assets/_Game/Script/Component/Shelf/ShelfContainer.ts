@@ -3,6 +3,7 @@ import { ShelfSlot } from './ShelfSlot';
 import { Item, ItemType } from '../Object/Item';
 import { EventListener } from '../../GameEvent/EventListener';
 import { GameEvent } from '../../GameEvent/GameEvent';
+import { VariableConfig } from '../../Config/VariableConfig';
 const { ccclass, property } = _decorator;
 
 @ccclass( 'ShelfContainer' )
@@ -84,6 +85,7 @@ export class ShelfContainer extends Component
     }
     //#endregion
 
+    public listAnimationPromise: Promise<void>[] = [];
     //#region CheckSortItem
     public async checkSortItem ( canMatched: boolean, checkMatchedIndex: number, item: Item ): Promise<void>
     {
@@ -92,13 +94,13 @@ export class ShelfContainer extends Component
             //await item.animationPromise;
             if ( canMatched )
             {
-                this.checkAndDestroyMatched( checkMatchedIndex );
+                Promise.all( this.listAnimationPromise ).then( () =>
+                {
+                    this.checkAndDestroyMatched( checkMatchedIndex );
+                } );
             }
         } );
     }
-
-
-
     //#endregion
 
     //#region Private methods
@@ -120,7 +122,8 @@ export class ShelfContainer extends Component
         {
             console.log( this.listPickedItem );
             let item = this.listPickedItem[ i ];
-            await item.sortItem( i );
+            //await new Promise( resolve => setTimeout( resolve, VariableConfig.SORT_TIME * 0.5 ) );
+            item.sortItem( i );
         }
     }
     //#endregion
@@ -132,9 +135,11 @@ export class ShelfContainer extends Component
         {
             let item = this.listPickedItem[ i ];
             item.sortItem( i );
+            await new Promise( resolve => setTimeout( resolve, VariableConfig.SORT_TIME * 0.5 ) );
         }
     }
     //#endregion
+
     //#region CheckAndDestroyMatched
     private async checkAndDestroyMatched ( itemIndex: number ): Promise<void>
     {
