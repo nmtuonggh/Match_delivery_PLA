@@ -135,7 +135,7 @@ export class ShelfContainer extends Component
         {
             let item = this.listPickedItem[ i ];
             item.sortItem( i );
-            await new Promise( resolve => setTimeout( resolve, VariableConfig.SORT_TIME * 0.5 ) );
+            await new Promise( resolve => setTimeout( resolve, 50) );
         }
     }
     //#endregion
