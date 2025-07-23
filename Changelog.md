@@ -20,6 +20,11 @@ Tất cả thay đổi đáng chú ý sẽ được ghi lại trong file này.
 ### Changed
 - Cập nhật `Item.pick()` để kiểm tra trạng thái matching và ngăn người chơi nhặt item khi đang xử lý match
 - Cập nhật `ShelfContainer.onGetNewItem()` để xử lý logic match sau khi sort
+- Hoàn thiện phương thức `Item.sortItem()` với logic di chuyển item theo đường cong Bezier khi thay đổi vị trí
+- Cải thiện hiệu ứng animation trong `ShelfContainer.destroyMatchedItems()` với trình tự mới:
+  - Các item nhảy lên trên đồng thời
+  - Hai item bên ngoài di chuyển vào vị trí item giữa
+  - Hiệu ứng scale xuống 0 trước khi biến mất
 
 ## [0.1.0] - 2025-06-26
 

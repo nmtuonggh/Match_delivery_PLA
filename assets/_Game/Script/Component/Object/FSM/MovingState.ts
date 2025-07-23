@@ -17,7 +17,6 @@ export class MovingState implements IState
 
     public enter ( item: Item ): void
     {
-        console.log( `${ item.node.name } đã vào trạng thái Moving` );
         //Physics
         item.rb.isKinematic = true;
 
@@ -32,8 +31,11 @@ export class MovingState implements IState
         let index = slotIndex.index + 1;
         let slot = ShelfContainer.instance.listShelfSlots[ index ];
         item.currentShelfIndexSlot = index;
+
+        ShelfContainer.instance.onGetNewItem( item, item.currentShelfIndexSlot );
+        ShelfContainer.instance.checkSortItem( slotIndex.canMatched, item.currentShelfIndexSlot , item );
+
         this.animationMove( item, slot );
-        ShelfContainer.instance.onGetNewItem( item, item.currentShelfIndexSlot , slotIndex.canMatched );
 
         //Animation
 
@@ -53,7 +55,7 @@ export class MovingState implements IState
         return this.name;
     }
 
-    public animationMove ( item: Item, slot: ShelfSlot ): void
+    public async animationMove ( item: Item, slot: ShelfSlot ): Promise<void>
     {
         let shelfScale = new Vec3( 0.75, 0.75, 0.75 );
         tween( item.node )

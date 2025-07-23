@@ -37,6 +37,7 @@ export class Item extends Component
     //#endregion
     //#region Public fields
     public currentShelfIndexSlot: number = -1;
+    public animationMoveDone: boolean = false;
     //#endregion
 
     //#region Private fields
@@ -144,7 +145,7 @@ export class Item extends Component
                     endPos
                 );
 
-                this.currentShelfIndexSlot = i;
+                //this.currentShelfIndexSlot = i;
             }
         } else
         {
@@ -168,9 +169,10 @@ export class Item extends Component
                     endPos
                 );
 
-                this.currentShelfIndexSlot = i - 1;
+                //this.currentShelfIndexSlot = i - 1;
             }
         }
+        this.currentShelfIndexSlot = newIndexPos;
     }
 
     public getSlotPosition ( index: number ): Vec3

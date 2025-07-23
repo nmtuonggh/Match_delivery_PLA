@@ -15,6 +15,7 @@ export class ShelfContainer extends Component
 
     static instance: ShelfContainer = null;
     public isMatching: boolean = false;
+    public canCheckMatch: boolean = true;
 
     //#region Private fields
     private currentItemCount: number = 0;
@@ -37,9 +38,13 @@ export class ShelfContainer extends Component
     //#endregion
 
     //#region Public methods
+
+    //#region GetSlotAndCheckMatch
     public getSlotAndCheckMatch ( item: Item ): { index: number, canMatched: boolean }
     {
+        this.currentItemCount++;
         const result = { index: -1, canMatched: false };
+
         for ( let i = this.listShelfSlots.length - 1; i >= 0; i-- )
         {
             if ( !this.isSameItemType( item, this.listShelfSlots[ i ] ) )
@@ -53,16 +58,17 @@ export class ShelfContainer extends Component
 
         if ( result.index === -1 && this.listPickedItem.length > 0 )
         {
-            result.index = this.currentItemCount - 1;
+            result.index = this.currentItemCount - 2;
         }
         return result;
     }
+    //#endregion
 
-    public onGetNewItem ( item: Item, index: number, canMatched: boolean ): void
+    //#region OnGetNewItem
+    public onGetNewItem ( item: Item, index: number ): void
     {
 
         let checkMatchedIndex = index;
-        this.currentItemCount++;
 
         if ( checkMatchedIndex === 0 )
         {
@@ -74,15 +80,19 @@ export class ShelfContainer extends Component
             this.listPickedItem.splice( checkMatchedIndex, 0, item );
         }
 
-        // Sort item trước khi check match
-        this.sortItemOnShelf().then( () =>
+
+    }
+    //#endregion
+
+    //#region CheckSortItem
+    public async checkSortItem ( canMatched: boolean, checkMatchedIndex: number, item: Item ): Promise<void>
+    {
+        this.sortItemOnShelf();
+        // Sau khi sort xong, kiểm tra match nếu có thể
+        if ( canMatched )
         {
-            // Sau khi sort xong, kiểm tra match nếu có thể
-            if ( canMatched )
-            {
-                this.checkAndDestroyMatched( checkMatchedIndex );
-            }
-        } );
+            this.checkAndDestroyMatched( checkMatchedIndex );
+        }
     }
 
 
@@ -90,6 +100,7 @@ export class ShelfContainer extends Component
     //#endregion
 
     //#region Private methods
+    //#region IsSameItemType
     private isSameItemType ( item: Item, slot: ShelfSlot ): boolean
     {
         let index = this.listShelfSlots.indexOf( slot );
@@ -99,6 +110,8 @@ export class ShelfContainer extends Component
         }
         return item.itemType === this.listPickedItem[ index ].itemType;
     }
+    //#endregion
+    //#region SortItemOnShelf
     private async sortItemOnShelf (): Promise<void>
     {
         for ( let i = this.currentItemCount - 1; i >= 0; i-- )
@@ -107,6 +120,8 @@ export class ShelfContainer extends Component
             await item.sortItem( i );
         }
     }
+    //#endregion
+    //#region SortItemAfterMatch
     private async sortItemAfterMatch (): Promise<void>
     {
         console.log( this.listPickedItem.length );
@@ -116,7 +131,8 @@ export class ShelfContainer extends Component
             item.sortItem( i );
         }
     }
-
+    //#endregion
+    //#region CheckAndDestroyMatched
     private async checkAndDestroyMatched ( itemIndex: number ): Promise<void>
     {
         if ( itemIndex < 0 || itemIndex >= this.listPickedItem.length || this.listPickedItem.length < 3 )
@@ -155,23 +171,79 @@ export class ShelfContainer extends Component
         // Reset cờ match
         this.isMatching = false;
     }
-
+    //#endregion
+    //#region DestroyMatchedItems
     /**
      * Xử lý việc destroy các item đã match
      * @param items danh sách item cần destroy
      */
     private async destroyMatchedItems ( items: Item[] ): Promise<void>
     {
-        // Tạo promise để đảm bảo tất cả animation hoàn thành trước khi tiếp tục
-        const destroyPromises = items.map( item =>
+        if ( items.length !== 3 )
+        {
+            return;
+        }
+
+        // Lấy ra item ở giữa và hai item ở hai bên
+        const leftItem = items[ 0 ];
+        const middleItem = items[ 1 ];
+        const rightItem = items[ 2 ];
+
+        // 1. Tất cả các item nhảy lên trên một chút
+        const jumpPromises = items.map( item =>
+        {
+            return new Promise<void>( ( resolve ) =>
+            {
+                const startPos = item.node.worldPosition.clone();
+                const jumpPos = new Vec3(
+                    startPos.x,
+                    startPos.y + 0.5, // Nhảy lên 0.5 đơn vị
+                    startPos.z
+                );
+
+                tween( item.node )
+                    .to( 0.2, { worldPosition: jumpPos }, { easing: 'bounceOut' } )
+                    .call( () => resolve() )
+                    .start();
+            } );
+        } );
+
+        // Chờ tất cả các item nhảy lên xong
+        await Promise.all( jumpPromises );
+
+        // 2. Hai item bên ngoài di chuyển vào vị trí của item giữa
+        const middlePos = middleItem.node.worldPosition.clone();
+        const moveToMiddlePromises = [
+            new Promise<void>( ( resolve ) =>
+            {
+                tween( leftItem.node )
+                    .to( 0.3, { worldPosition: middlePos }, { easing: 'quartInOut' } )
+                    .call( () => resolve() )
+                    .start();
+            } ),
+            new Promise<void>( ( resolve ) =>
+            {
+                tween( rightItem.node )
+                    .to( 0.3, { worldPosition: middlePos }, { easing: 'quartInOut' } )
+                    .call( () => resolve() )
+                    .start();
+            } )
+        ];
+
+        // Chờ hai item bên ngoài di chuyển xong
+        await Promise.all( moveToMiddlePromises );
+
+        // 3. Hiệu ứng mất đi (scale xuống 0 và tạo effect)
+        const disappearPromises = items.map( item =>
         {
             return new Promise<void>( ( resolve ) =>
             {
                 // Hiệu ứng scale xuống 0 trước khi destroy
                 tween( item.node )
-                    .to( 0.3, { scale: new Vec3( 0, 0, 0 ) }, { easing: 'bounceIn' } )
+                    .to( 0.2, { scale: new Vec3( 0, 0, 0 ) }, { easing: 'backIn' } )
                     .call( () =>
                     {
+                        // TODO: Có thể thêm hiệu ứng particle ở đây nếu cần
                         item.node.destroy();
                         resolve();
                     } )
@@ -179,8 +251,8 @@ export class ShelfContainer extends Component
             } );
         } );
 
-        // Chờ tất cả animation hoàn thành
-        await Promise.all( destroyPromises );
+        // Chờ tất cả các item biến mất
+        await Promise.all( disappearPromises );
     }
 
     /**
