@@ -33,6 +33,7 @@ export class MovingState implements IState
         item.currentShelfIndexSlot = index;
 
         ShelfContainer.instance.onGetNewItem( item, item.currentShelfIndexSlot );
+        //await
         ShelfContainer.instance.checkSortItem( slotIndex.canMatched, item.currentShelfIndexSlot , item );
 
         this.animationMove( item, slot );
@@ -73,10 +74,8 @@ export class MovingState implements IState
         let bezierPos = new Vec3();
         Vec3.add( bezierPos, midPoint, offset );
 
-        BezierTweenWorld( item.node, 0.3, startPos, bezierPos, endPos ).then( () =>
-        {
-            item.onShelf();
-        } );
-
+        item.animationPromise = BezierTweenWorld( item.node, 0.3, startPos, bezierPos, endPos );
+        await item.animationPromise;
+        item.onShelf();
     }
 }

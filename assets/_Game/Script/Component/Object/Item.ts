@@ -37,7 +37,8 @@ export class Item extends Component
     //#endregion
     //#region Public fields
     public currentShelfIndexSlot: number = -1;
-    public animationMoveDone: boolean = false;
+    //public animationMoveDone: boolean = false;
+    public animationPromise: Promise<void> | null = null;
     //#endregion
 
     //#region Private fields
@@ -137,14 +138,14 @@ export class Item extends Component
                     ( startPos.z + endPos.z ) / 2
                 );
 
-                await BezierTweenWorld(
+                this.animationPromise = BezierTweenWorld(
                     this.node,
                     0.15, // Thời gian tương đương với InGameController.sortTime
                     startPos,
                     controlPoint,
                     endPos
                 );
-
+                await this.animationPromise;
                 //this.currentShelfIndexSlot = i;
             }
         } else
@@ -161,14 +162,14 @@ export class Item extends Component
                     ( startPos.z + endPos.z ) / 2
                 );
 
-                await BezierTweenWorld(
+                this.animationPromise = BezierTweenWorld(
                     this.node,
                     0.15, // Thời gian tương đương với InGameController.sortTime
                     startPos,
                     controlPoint,
                     endPos
                 );
-
+                await this.animationPromise;
                 //this.currentShelfIndexSlot = i - 1;
             }
         }

@@ -87,12 +87,14 @@ export class ShelfContainer extends Component
     //#region CheckSortItem
     public async checkSortItem ( canMatched: boolean, checkMatchedIndex: number, item: Item ): Promise<void>
     {
-        this.sortItemOnShelf();
-        // Sau khi sort xong, kiểm tra match nếu có thể
-        if ( canMatched )
+        await this.sortItemOnShelf().then( async () =>
         {
-            this.checkAndDestroyMatched( checkMatchedIndex );
-        }
+            //await item.animationPromise;
+            if ( canMatched )
+            {
+                this.checkAndDestroyMatched( checkMatchedIndex );
+            }
+        } );
     }
 
 
@@ -116,6 +118,7 @@ export class ShelfContainer extends Component
     {
         for ( let i = this.currentItemCount - 1; i >= 0; i-- )
         {
+            console.log( this.listPickedItem );
             let item = this.listPickedItem[ i ];
             await item.sortItem( i );
         }
@@ -244,7 +247,7 @@ export class ShelfContainer extends Component
                     .call( () =>
                     {
                         // TODO: Có thể thêm hiệu ứng particle ở đây nếu cần
-                        item.node.destroy();
+                        //item.node.destroy();
                         resolve();
                     } )
                     .start();
