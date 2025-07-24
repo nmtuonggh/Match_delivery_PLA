@@ -1,4 +1,4 @@
-import { _decorator, Component, Enum, Label, Node, Sprite } from 'cc';
+import { _decorator, Component, Enum, Label, Node, Sprite, tween } from 'cc';
 import { ItemType } from '../Object/Item';
 const { ccclass, property } = _decorator;
 
@@ -19,5 +19,18 @@ export class ItemOder extends Component
     protected start (): void
     {
         this.oderCountLabel.string = this.oderCount.toString();
+    }
+
+    public onItemOnShelf (): void
+    {
+        let startScale = this.node.scale;
+        let newScale = startScale.clone();
+        newScale.x *= 1.1;
+        newScale.y *= 1.1;
+        newScale.z *= 1.1;
+        tween( this.node )
+            .to( 0.1, { scale: newScale }, { easing: 'bounceOut' } )
+            .to( 0.1, { scale: startScale }, { easing: 'bounceOut' } )
+            .start();
     }
 }

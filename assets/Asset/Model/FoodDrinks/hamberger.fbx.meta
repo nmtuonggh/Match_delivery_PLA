@@ -1,0 +1,191 @@
+{
+  "ver": "2.3.13",
+  "importer": "fbx",
+  "imported": true,
+  "uuid": "5b8c75ef-530f-41f6-8b7c-9636c78e7bd8",
+  "files": [],
+  "subMetas": {
+    "306e4": {
+      "importer": "gltf-mesh",
+      "uuid": "5b8c75ef-530f-41f6-8b7c-9636c78e7bd8@306e4",
+      "displayName": "",
+      "id": "306e4",
+      "name": "Hamberger.mesh",
+      "userData": {
+        "gltfIndex": 0,
+        "triangleCount": 264
+      },
+      "ver": "1.1.1",
+      "imported": true,
+      "files": [
+        ".bin",
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "585ed": {
+      "importer": "gltf-mesh",
+      "uuid": "5b8c75ef-530f-41f6-8b7c-9636c78e7bd8@585ed",
+      "displayName": "",
+      "id": "585ed",
+      "name": "Hamberger_1.mesh",
+      "userData": {
+        "gltfIndex": 1,
+        "triangleCount": 378
+      },
+      "ver": "1.1.1",
+      "imported": true,
+      "files": [
+        ".bin",
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "22c95": {
+      "importer": "gltf-mesh",
+      "uuid": "5b8c75ef-530f-41f6-8b7c-9636c78e7bd8@22c95",
+      "displayName": "",
+      "id": "22c95",
+      "name": "Hamberger_2.mesh",
+      "userData": {
+        "gltfIndex": 2,
+        "triangleCount": 392
+      },
+      "ver": "1.1.1",
+      "imported": true,
+      "files": [
+        ".bin",
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "e33cd": {
+      "importer": "gltf-mesh",
+      "uuid": "5b8c75ef-530f-41f6-8b7c-9636c78e7bd8@e33cd",
+      "displayName": "",
+      "id": "e33cd",
+      "name": "Hamberger_3.mesh",
+      "userData": {
+        "gltfIndex": 3,
+        "triangleCount": 320
+      },
+      "ver": "1.1.1",
+      "imported": true,
+      "files": [
+        ".bin",
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "28f8d": {
+      "importer": "gltf-mesh",
+      "uuid": "5b8c75ef-530f-41f6-8b7c-9636c78e7bd8@28f8d",
+      "displayName": "",
+      "id": "28f8d",
+      "name": "Hamberger_4.mesh",
+      "userData": {
+        "gltfIndex": 4,
+        "triangleCount": 346
+      },
+      "ver": "1.1.1",
+      "imported": true,
+      "files": [
+        ".bin",
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "049b5": {
+      "importer": "gltf-mesh",
+      "uuid": "5b8c75ef-530f-41f6-8b7c-9636c78e7bd8@049b5",
+      "displayName": "",
+      "id": "049b5",
+      "name": "Hamberger_5.mesh",
+      "userData": {
+        "gltfIndex": 5,
+        "triangleCount": 76
+      },
+      "ver": "1.1.1",
+      "imported": true,
+      "files": [
+        ".bin",
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "4e9dc": {
+      "importer": "gltf-material",
+      "uuid": "5b8c75ef-530f-41f6-8b7c-9636c78e7bd8@4e9dc",
+      "displayName": "",
+      "id": "4e9dc",
+      "name": "UnlitColor.material",
+      "userData": {
+        "gltfIndex": 0
+      },
+      "ver": "1.0.14",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "9e249": {
+      "importer": "gltf-scene",
+      "uuid": "5b8c75ef-530f-41f6-8b7c-9636c78e7bd8@9e249",
+      "displayName": "",
+      "id": "9e249",
+      "name": "hamberger.prefab",
+      "userData": {
+        "gltfIndex": 0
+      },
+      "ver": "1.0.14",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "imageMetas": [],
+    "fbx": {
+      "smartMaterialEnabled": true
+    },
+    "lods": {
+      "enable": false,
+      "hasBuiltinLOD": false,
+      "options": [
+        {
+          "screenRatio": 0.25,
+          "faceCount": 1
+        },
+        {
+          "screenRatio": 0.125,
+          "faceCount": 0.25
+        },
+        {
+          "screenRatio": 0.01,
+          "faceCount": 0.1
+        }
+      ]
+    },
+    "assetFinder": {
+      "meshes": [
+        "5b8c75ef-530f-41f6-8b7c-9636c78e7bd8@306e4",
+        "5b8c75ef-530f-41f6-8b7c-9636c78e7bd8@585ed",
+        "5b8c75ef-530f-41f6-8b7c-9636c78e7bd8@22c95",
+        "5b8c75ef-530f-41f6-8b7c-9636c78e7bd8@e33cd",
+        "5b8c75ef-530f-41f6-8b7c-9636c78e7bd8@28f8d",
+        "5b8c75ef-530f-41f6-8b7c-9636c78e7bd8@049b5"
+      ],
+      "skeletons": [],
+      "textures": [],
+      "materials": [
+        "5b8c75ef-530f-41f6-8b7c-9636c78e7bd8@4e9dc"
+      ],
+      "scenes": [
+        "5b8c75ef-530f-41f6-8b7c-9636c78e7bd8@9e249"
+      ]
+    }
+  }
+}

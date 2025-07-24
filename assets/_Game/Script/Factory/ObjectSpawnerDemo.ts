@@ -37,74 +37,89 @@ export class ObjectSpawnerDemo extends Component
     // Lưu trữ các object đã spawn để có thể recycle sau này
     private spawnedObjects: Map<string, Node[]> = new Map();
 
+    // Mảng lưu trữ các loại prefab cần spawn
+    private prefabsToSpawn: { type: ObjectType, prefab: Prefab }[] = [];
+
+    // Sử dụng mảng prefabs để quản lý tất cả các prefab một cách linh hoạt
     @property( {
-        type: Prefab,
-        tooltip: 'Cube Prefab'
+        type: [ Prefab ],
+        tooltip: 'Danh sách các prefab'
     } )
-    private cubePrefab: Prefab = null;
+    private prefabs: Prefab[] = [];
 
     @property( {
-        type: Prefab,
-        tooltip: 'Sphere Prefab'
+        type: [ String ],
+        tooltip: 'Tên tương ứng với các prefab (phải khớp với ObjectType)'
     } )
-    private spherePrefab: Prefab = null;
-
-    @property( {
-        type: Prefab,
-        tooltip: 'Apple Prefab'
-    } )
-    private applePrefab: Prefab = null;
-
-    @property( {
-        type: Prefab,
-        tooltip: 'GVS Prefab'
-    } )
-    private gvsPrefab: Prefab = null;
+    private prefabNames: string[] = [];
+    
+    // Các biến điều khiển chọn đối tượng spawn
+    @property({
+        type: [ Number ],
+        tooltip: 'Vị trí index của các đối tượng cần spawn'
+    })
+    private indexObj: number[] = [];
+    
+    @property({
+        type: [ Number ],
+        tooltip: 'Số lượng spawn tương ứng với từng indexObj'
+    })
+    private spawnCount: number[] = [];
+    
+    @property({
+        tooltip: 'Nếu true, spawn tất cả các loại đối tượng'
+    })
+    private spawnAll: boolean = false;
+    
+    @property({
+        tooltip: 'Số lượng spawn cho mỗi loại nếu spawnAll = true',
+        visible: function() { return this.spawnAll; }
+    })
+    private spawnAllCount: number = 10;
     start ()
     {
         // Khởi tạo Factory với container làm parent node
         ObjectFactory.instance.initialize( this.objectContainer );
 
-        // Đăng ký prefab với Factory
-        if ( this.cubePrefab )
+        // Kiểm tra số lượng prefab và tên có khớp nhau
+        if ( this.prefabs.length !== this.prefabNames.length )
         {
-            ObjectFactory.instance.setPrefab( ObjectType.CUBE, this.cubePrefab );
+            console.error( 'Số lượng prefab và tên không khớp nhau!' );
+            return;
         }
 
-        if ( this.spherePrefab )
+        // Xử lý tất cả các prefab trong một vòng lặp
+        for ( let i = 0; i < this.prefabs.length; i++ )
         {
-            ObjectFactory.instance.setPrefab( ObjectType.SPHERE, this.spherePrefab );
-        }
+            const prefab = this.prefabs[ i ];
+            const typeName = this.prefabNames[ i ];
 
-        if ( this.applePrefab )
-        {
-            ObjectFactory.instance.setPrefab( ObjectType.APPLE, this.applePrefab );
-        }
+            // Kiểm tra prefab và tên hợp lệ
+            if ( !prefab || !typeName ) continue;
 
-        if ( this.gvsPrefab )
-        {
-            ObjectFactory.instance.setPrefab( ObjectType.GVS, this.gvsPrefab );
-        }
+            // Chuyển tên thành ObjectType
+            const objType = typeName as unknown as ObjectType;
 
-        // Khởi tạo map để lưu trữ các object đã spawn
-        this.spawnedObjects.set( ObjectType.CUBE.toString(), [] );
-        this.spawnedObjects.set( ObjectType.SPHERE.toString(), [] );
-        this.spawnedObjects.set( ObjectType.APPLE.toString(), [] );
-        this.spawnedObjects.set( ObjectType.GVS.toString(), [] );
+            // Đăng ký prefab với Factory
+            ObjectFactory.instance.setPrefab( objType, prefab );
+
+            // Thêm vào mảng prefabsToSpawn
+            this.prefabsToSpawn.push( { type: objType, prefab: prefab } );
+
+            // Khởi tạo mảng cho loại đối tượng này trong spawnedObjects
+            this.spawnedObjects.set( objType.toString(), [] );
+        }
 
         // Thiết lập các button events
         if ( this.spawnCubeBtn )
         {
-            this.spawnCubeBtn.node.on( Button.EventType.CLICK, this.onSpawnCube, this );
-        }
-
-        if ( this.spawnSphereBtn )
-        {
-            this.spawnSphereBtn.node.on( Button.EventType.CLICK, this.onSpawnSphere, this );
+            // Nút spawn tất cả các loại đối tượng
+            this.spawnCubeBtn.node.on( Button.EventType.CLICK, this.onSpawnObj, this );
         }
 
         if ( this.clearBtn )
         {
+            // Nút xóa tất cả các đối tượng
             this.clearBtn.node.on( Button.EventType.CLICK, this.onClearObjects, this );
         }
     }
@@ -114,12 +129,7 @@ export class ObjectSpawnerDemo extends Component
         // Hủy các event listeners khi component bị destroy
         if ( this.spawnCubeBtn )
         {
-            this.spawnCubeBtn.node.off( Button.EventType.CLICK, this.onSpawnCube, this );
-        }
-
-        if ( this.spawnSphereBtn )
-        {
-            this.spawnSphereBtn.node.off( Button.EventType.CLICK, this.onSpawnSphere, this );
+            this.spawnCubeBtn.node.off( Button.EventType.CLICK, this.onSpawnObj, this );
         }
 
         if ( this.clearBtn )
@@ -132,80 +142,97 @@ export class ObjectSpawnerDemo extends Component
     }
 
     /**
-     * Spawn cube tại vị trí ngẫu nhiên
+     * Spawn đối tượng theo cấu hình đã chọn
      */
-    async onSpawnCube ()
+    async onSpawnObj ()
     {
-        for ( let i = 0; i < 10; i++ )
+        if ( this.spawnAll )
         {
-            let position = this.getRandomPosition();
-            const cube = await ObjectFactory.instance.spawn( ObjectType.CUBE, position );
-
-            if ( cube )
+            // Nếu chọn spawn tất cả, spawn mỗi loại đối tượng với số lượng spawnAllCount
+            console.log( `Spawn tất cả các loại đối tượng, mỗi loại ${ this.spawnAllCount } cái` );
+            
+            for ( const prefabInfo of this.prefabsToSpawn )
             {
-                console.log( 'Đã spawn Cube tại', position );
-                this.spawnedObjects.get( ObjectType.CUBE.toString() ).push( cube );
-            }
-        }
-
-        for ( let i = 0; i < 10; i++ )
-        {
-            let position = this.getRandomPosition();
-            const apple = await ObjectFactory.instance.spawn( ObjectType.APPLE, position );
-
-            if ( apple )
-            {
-                console.log( 'Đã spawn Apple tại', position );
-                this.spawnedObjects.get( ObjectType.APPLE.toString() ).push( apple );
-            }
-        }
-
-    }
-
-    /**
-     * Spawn sphere tại vị trí ngẫu nhiên
-     */
-    async onSpawnSphere ()
-    {
-        for ( let i = 0; i < 10; i++ )
-        {
-            let position = this.getRandomPosition();
-            const sphere = await ObjectFactory.instance.spawn( ObjectType.SPHERE, position );
-
-            if ( sphere )
-            {
-                console.log( 'Đã spawn Sphere tại', position );
-                this.spawnedObjects.get( ObjectType.SPHERE.toString() ).push( sphere );
-            }
-        }
-
-        for ( let i = 0; i < 10; i++ )
-            {
-                let position = this.getRandomPosition();
-                const gvs = await ObjectFactory.instance.spawn( ObjectType.GVS, position );
-    
-                if ( gvs )
+                for ( let i = 0; i < this.spawnAllCount; i++ )
                 {
-                    console.log( 'Đã spawn GVS tại', position );
-                    this.spawnedObjects.get( ObjectType.GVS.toString() ).push( gvs );
+                    let position = this.getRandomPosition();
+                    const obj = await ObjectFactory.instance.spawn( prefabInfo.type, position );
+
+                    if ( obj )
+                    {
+                        console.log( `Đã spawn ${ prefabInfo.type } tại`, position );
+                        this.spawnedObjects.get( prefabInfo.type.toString() ).push( obj );
+                    }
                 }
             }
+        }
+        else
+        {
+            // Nếu không chọn spawn tất cả, spawn theo indexObj và spawnCount
+            console.log( 'Spawn theo cấu hình indexObj và spawnCount' );
+            
+            // Kiểm tra số lượng index và count có khớp nhau không
+            if ( this.indexObj.length !== this.spawnCount.length )
+            {
+                console.error( 'Số lượng indexObj và spawnCount không khớp!' );
+                return;
+            }
+            
+            // Duyệt qua từng cặp indexObj và spawnCount
+            for ( let i = 0; i < this.indexObj.length; i++ )
+            {
+                const index = this.indexObj[i];
+                const count = this.spawnCount[i];
+                
+                // Kiểm tra index hợp lệ
+                if ( index < 0 || index >= this.prefabsToSpawn.length )
+                {
+                    console.error( `Index không hợp lệ: ${ index }` );
+                    continue;
+                }
+                
+                // Lấy prefab info tương ứng
+                const prefabInfo = this.prefabsToSpawn[index];
+                
+                // Spawn đối tượng với số lượng cấu hình
+                for ( let j = 0; j < count; j++ )
+                {
+                    let position = this.getRandomPosition();
+                    const obj = await ObjectFactory.instance.spawn( prefabInfo.type, position );
+
+                    if ( obj )
+                    {
+                        console.log( `Đã spawn ${ prefabInfo.type } tại`, position );
+                        this.spawnedObjects.get( prefabInfo.type.toString() ).push( obj );
+                    }
+                }
+            }
+        }
     }
 
     /**
-     * Spawn apple tại vị trí ngẫu nhiên
+     * Spawn một loại đối tượng cụ thể tại vị trí ngẫu nhiên
+     * @param objectType Loại đối tượng cần spawn
      */
-    async onSpawnApple ()
+    async onSpawnSpecificType ( objectType: ObjectType )
     {
+        // Tìm prefab info cho loại đối tượng được yêu cầu
+        const prefabInfo = this.prefabsToSpawn.find( p => p.type === objectType );
+        if ( !prefabInfo )
+        {
+            console.error( `Không tìm thấy prefab cho loại: ${ objectType }` );
+            return;
+        }
+
         for ( let i = 0; i < 10; i++ )
         {
             let position = this.getRandomPosition();
-            const apple = await ObjectFactory.instance.spawn( ObjectType.APPLE, position );
+            const obj = await ObjectFactory.instance.spawn( objectType, position );
 
-            if ( apple )
+            if ( obj )
             {
-                console.log( 'Đã spawn Apple tại', position );
-                this.spawnedObjects.get( ObjectType.APPLE.toString() ).push( apple );
+                console.log( `Đã spawn ${ objectType } tại`, position );
+                this.spawnedObjects.get( objectType.toString() ).push( obj );
             }
         }
     }
@@ -215,21 +242,19 @@ export class ObjectSpawnerDemo extends Component
      */
     onClearObjects ()
     {
-        // Recycle tất cả các cube
-        const cubes = this.spawnedObjects.get( ObjectType.CUBE.toString() );
-        cubes.forEach( cube =>
+        // Recycle tất cả các loại đối tượng
+        for ( const prefabInfo of this.prefabsToSpawn )
         {
-            ObjectFactory.instance.recycle( cube, ObjectType.CUBE );
-        } );
-        cubes.length = 0;
-
-        // Recycle tất cả các sphere
-        const spheres = this.spawnedObjects.get( ObjectType.SPHERE.toString() );
-        spheres.forEach( sphere =>
-        {
-            ObjectFactory.instance.recycle( sphere, ObjectType.SPHERE );
-        } );
-        spheres.length = 0;
+            const objects = this.spawnedObjects.get( prefabInfo.type.toString() );
+            if ( objects && objects.length > 0 )
+            {
+                objects.forEach( obj =>
+                {
+                    ObjectFactory.instance.recycle( obj, prefabInfo.type );
+                } );
+                objects.length = 0;
+            }
+        }
 
         console.log( 'Đã clear và recycle tất cả objects' );
     }

@@ -7,6 +7,8 @@ import { StateMachine } from './FSM/StateMachine';
 import { ShelfContainer } from '../Shelf/ShelfContainer';
 import { BezierTweenWorld } from '../../Tween/TweenExtension';
 import { VariableConfig } from '../../Config/VariableConfig';
+import { ItemType } from './ItemTypeEnum';
+import { AudioSystem } from '../../Audio/AudioSystem';
 const { ccclass, property } = _decorator;
 
 /**
@@ -20,13 +22,7 @@ export enum ItemStateType
     ON_SHELF = 'OnShelf'
 }
 
-export enum ItemType
-{
-    Watermelon = 'Watermelon',
-    Apple = 'Apple',
-    Gio = 'Gio',
-    GVS = 'GVS'
-}
+
 
 @ccclass( 'Item' )
 export class Item extends Component
@@ -96,6 +92,7 @@ export class Item extends Component
     {
         // Nếu item không pickable hoặc đang trong quá trình match thì không cho pick
         if ( !this._isPickable || ShelfContainer.instance.isInMatching() ) return false;
+        AudioSystem.instance.playPickObj();
         return this.stateMachine.changeState( ItemStateType.PICKED );
     }
     public drop (): boolean
@@ -185,3 +182,5 @@ export class Item extends Component
         return ShelfContainer.instance.listShelfSlots[ index ].node.worldPosition;
     }
 }
+export { ItemType };
+

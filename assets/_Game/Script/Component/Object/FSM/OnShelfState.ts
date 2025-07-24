@@ -2,6 +2,8 @@ import { _decorator, Component, Node } from 'cc';
 import { IState } from './IState';
 import { Item } from '../Item';
 import { ShelfContainer } from '../../Shelf/ShelfContainer';
+import { EventListener } from '../../../GameEvent/EventListener';
+import { GameEvent } from '../../../GameEvent/GameEvent';
 const { ccclass, property } = _decorator;
 
 @ccclass( 'OnShelfState' )
@@ -16,7 +18,7 @@ export class OnShelfState implements IState
         //console.log( `${ item.node.name } đã vào trạng thái OnShelf` );
         //reset góc
         item.node.setRotationFromEuler( 0, 0, 0 );
-
+        EventListener.emit( GameEvent.ItemOnShelf, item.itemType );
     }
 
     public exit ( item: Item ): void

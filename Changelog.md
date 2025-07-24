@@ -25,6 +25,10 @@ Tất cả thay đổi đáng chú ý sẽ được ghi lại trong file này.
   - Các item nhảy lên trên đồng thời
   - Hai item bên ngoài di chuyển vào vị trí item giữa
   - Hiệu ứng scale xuống 0 trước khi biến mất
+- Cải tiến `ObjectSpawnerDemo.ts` với mảng `prefabsToSpawn` để quản lý tập trung:
+  - Thêm mảng lưu trữ các loại prefab cần spawn
+  - Cập nhật phương thức `onSpawnObj()` để spawn 10 đối tượng mỗi loại từ mảng
+  - Tối ưu hóa phương thức `onClearObjects()` để xử lý tất cả loại đối tượng cùng lúc
 
 ## [0.1.0] - 2025-06-26
 

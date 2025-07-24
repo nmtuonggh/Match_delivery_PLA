@@ -1,10 +1,11 @@
 import { _decorator, Component, Node, tween, Vec3, Tween, TweenSystem } from 'cc';
 import { ShelfSlot } from './ShelfSlot';
-import { Item, ItemType } from '../Object/Item';
+import { Item } from '../Object/Item';
 import { EventListener } from '../../GameEvent/EventListener';
 import { GameEvent } from '../../GameEvent/GameEvent';
 import { VariableConfig } from '../../Config/VariableConfig';
 import { GameController } from '../../Manager/GameController';
+import { AudioSystem } from '../../Audio/AudioSystem';
 const { ccclass, property } = _decorator;
 
 @ccclass( 'ShelfContainer' )
@@ -264,7 +265,7 @@ export class ShelfContainer extends Component
                     .call( () =>
                     {
                         // TODO: Có thể thêm hiệu ứng particle ở đây nếu cần
-                        //item.node.destroy();
+                        item.node.destroy();
                         resolve();
                     } )
                     .start();
@@ -272,6 +273,8 @@ export class ShelfContainer extends Component
         } );
 
         // Chờ tất cả các item biến mất
+        EventListener.emit(GameEvent.ItemMatched, items[0].itemType, 3);
+        AudioSystem.instance.playMatchObj();
         await Promise.all( disappearPromises );
     }
 

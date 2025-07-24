@@ -1,0 +1,172 @@
+{
+  "ver": "2.3.13",
+  "importer": "fbx",
+  "imported": true,
+  "uuid": "9757202b-5a26-4d48-9e7a-a4059819d3d6",
+  "files": [],
+  "subMetas": {
+    "a7818": {
+      "importer": "gltf-mesh",
+      "uuid": "9757202b-5a26-4d48-9e7a-a4059819d3d6@a7818",
+      "displayName": "",
+      "id": "a7818",
+      "name": "Ice Cream Cone_Blue.001.mesh",
+      "userData": {
+        "gltfIndex": 0,
+        "triangleCount": 360
+      },
+      "ver": "1.1.1",
+      "imported": true,
+      "files": [
+        ".bin",
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "5946d": {
+      "importer": "gltf-mesh",
+      "uuid": "9757202b-5a26-4d48-9e7a-a4059819d3d6@5946d",
+      "displayName": "",
+      "id": "5946d",
+      "name": "Ice Cream Cone_Blue_1.001.mesh",
+      "userData": {
+        "gltfIndex": 1,
+        "triangleCount": 286
+      },
+      "ver": "1.1.1",
+      "imported": true,
+      "files": [
+        ".bin",
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "3b783": {
+      "importer": "gltf-mesh",
+      "uuid": "9757202b-5a26-4d48-9e7a-a4059819d3d6@3b783",
+      "displayName": "",
+      "id": "3b783",
+      "name": "Ice Cream Cone_Blue_2.001.mesh",
+      "userData": {
+        "gltfIndex": 2,
+        "triangleCount": 359
+      },
+      "ver": "1.1.1",
+      "imported": true,
+      "files": [
+        ".bin",
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "97bbb": {
+      "importer": "gltf-mesh",
+      "uuid": "9757202b-5a26-4d48-9e7a-a4059819d3d6@97bbb",
+      "displayName": "",
+      "id": "97bbb",
+      "name": "Ice Cream Cone_Blue_3.001.mesh",
+      "userData": {
+        "gltfIndex": 3,
+        "triangleCount": 200
+      },
+      "ver": "1.1.1",
+      "imported": true,
+      "files": [
+        ".bin",
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "6dc9d": {
+      "importer": "gltf-mesh",
+      "uuid": "9757202b-5a26-4d48-9e7a-a4059819d3d6@6dc9d",
+      "displayName": "",
+      "id": "6dc9d",
+      "name": "Ice Cream Cone_Blue_4.001.mesh",
+      "userData": {
+        "gltfIndex": 4,
+        "triangleCount": 336
+      },
+      "ver": "1.1.1",
+      "imported": true,
+      "files": [
+        ".bin",
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "76a7d": {
+      "importer": "gltf-material",
+      "uuid": "9757202b-5a26-4d48-9e7a-a4059819d3d6@76a7d",
+      "displayName": "",
+      "id": "76a7d",
+      "name": "UnlitColor.001.material",
+      "userData": {
+        "gltfIndex": 0
+      },
+      "ver": "1.0.14",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "c7b27": {
+      "importer": "gltf-scene",
+      "uuid": "9757202b-5a26-4d48-9e7a-a4059819d3d6@c7b27",
+      "displayName": "",
+      "id": "c7b27",
+      "name": "IceCreamConeBlue.prefab",
+      "userData": {
+        "gltfIndex": 0
+      },
+      "ver": "1.0.14",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "imageMetas": [],
+    "fbx": {
+      "smartMaterialEnabled": true
+    },
+    "lods": {
+      "enable": false,
+      "hasBuiltinLOD": false,
+      "options": [
+        {
+          "screenRatio": 0.25,
+          "faceCount": 1
+        },
+        {
+          "screenRatio": 0.125,
+          "faceCount": 0.25
+        },
+        {
+          "screenRatio": 0.01,
+          "faceCount": 0.1
+        }
+      ]
+    },
+    "assetFinder": {
+      "meshes": [
+        "9757202b-5a26-4d48-9e7a-a4059819d3d6@a7818",
+        "9757202b-5a26-4d48-9e7a-a4059819d3d6@5946d",
+        "9757202b-5a26-4d48-9e7a-a4059819d3d6@3b783",
+        "9757202b-5a26-4d48-9e7a-a4059819d3d6@97bbb",
+        "9757202b-5a26-4d48-9e7a-a4059819d3d6@6dc9d"
+      ],
+      "skeletons": [],
+      "textures": [],
+      "materials": [
+        "9757202b-5a26-4d48-9e7a-a4059819d3d6@76a7d"
+      ],
+      "scenes": [
+        "9757202b-5a26-4d48-9e7a-a4059819d3d6@c7b27"
+      ]
+    }
+  }
+}
