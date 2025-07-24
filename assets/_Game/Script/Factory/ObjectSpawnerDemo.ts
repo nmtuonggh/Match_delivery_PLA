@@ -54,6 +54,12 @@ export class ObjectSpawnerDemo extends Component
         tooltip: 'Apple Prefab'
     } )
     private applePrefab: Prefab = null;
+
+    @property( {
+        type: Prefab,
+        tooltip: 'GVS Prefab'
+    } )
+    private gvsPrefab: Prefab = null;
     start ()
     {
         // Khởi tạo Factory với container làm parent node
@@ -75,10 +81,16 @@ export class ObjectSpawnerDemo extends Component
             ObjectFactory.instance.setPrefab( ObjectType.APPLE, this.applePrefab );
         }
 
+        if ( this.gvsPrefab )
+        {
+            ObjectFactory.instance.setPrefab( ObjectType.GVS, this.gvsPrefab );
+        }
+
         // Khởi tạo map để lưu trữ các object đã spawn
         this.spawnedObjects.set( ObjectType.CUBE.toString(), [] );
         this.spawnedObjects.set( ObjectType.SPHERE.toString(), [] );
         this.spawnedObjects.set( ObjectType.APPLE.toString(), [] );
+        this.spawnedObjects.set( ObjectType.GVS.toString(), [] );
 
         // Thiết lập các button events
         if ( this.spawnCubeBtn )
@@ -166,6 +178,18 @@ export class ObjectSpawnerDemo extends Component
                 this.spawnedObjects.get( ObjectType.SPHERE.toString() ).push( sphere );
             }
         }
+
+        for ( let i = 0; i < 10; i++ )
+            {
+                let position = this.getRandomPosition();
+                const gvs = await ObjectFactory.instance.spawn( ObjectType.GVS, position );
+    
+                if ( gvs )
+                {
+                    console.log( 'Đã spawn GVS tại', position );
+                    this.spawnedObjects.get( ObjectType.GVS.toString() ).push( gvs );
+                }
+            }
     }
 
     /**

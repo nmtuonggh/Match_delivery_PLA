@@ -4,6 +4,7 @@ import { Item, ItemType } from '../Object/Item';
 import { EventListener } from '../../GameEvent/EventListener';
 import { GameEvent } from '../../GameEvent/GameEvent';
 import { VariableConfig } from '../../Config/VariableConfig';
+import { GameController } from '../../Manager/GameController';
 const { ccclass, property } = _decorator;
 
 @ccclass( 'ShelfContainer' )
@@ -40,6 +41,10 @@ export class ShelfContainer extends Component
 
     //#region Public methods
 
+    isFullSlot (): boolean
+    {
+        return this.currentItemCount >= this.listShelfSlots.length;
+    }
     //#region GetSlotAndCheckMatch
     public getSlotAndCheckMatch ( item: Item ): { index: number, canMatched: boolean }
     {
@@ -98,6 +103,13 @@ export class ShelfContainer extends Component
                 {
                     this.checkAndDestroyMatched( checkMatchedIndex );
                 } );
+            }
+            else if(this.isFullSlot())
+            {
+                GameController.instance.onDisableInput();
+                this.scheduleOnce(() => {
+                    GameController.instance.loseGame();
+                }, 0.5);
             }
         } );
     }

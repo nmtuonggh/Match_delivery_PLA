@@ -75,9 +75,12 @@ export class PickObjHandler extends Component
                         if ( this.currentItem !== hitNode )
                         {
                             this.stopPick( this.currentItem );
-                            this.currentItem = hitNode;
-                            log( 'Đã chọn object:', hitNode.name );
-                            interactableObj.pick();
+                            if ( !ShelfContainer.instance.isFullSlot() )
+                            {
+                                this.currentItem = hitNode;
+                                log( 'Đã chọn object:', hitNode.name );
+                                interactableObj.pick();
+                            }
                         }
                         return;
                     }

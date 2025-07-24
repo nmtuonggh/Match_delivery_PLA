@@ -7,7 +7,7 @@ export class VariableConfig
     //tao 1 bien toi co the dung o bat ky dau
     public static instance: VariableConfig = null;
     public static SORT_TIME: number = 0.1;
-    public static ANIMATIONITEM_TIME: number = 0.15;
+    public static ANIMATIONITEM_TIME: number = 0.2;
 }
 
 

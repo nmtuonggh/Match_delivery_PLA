@@ -25,6 +25,7 @@ export enum ItemType
     Watermelon = 'Watermelon',
     Apple = 'Apple',
     Gio = 'Gio',
+    GVS = 'GVS'
 }
 
 @ccclass( 'Item' )
