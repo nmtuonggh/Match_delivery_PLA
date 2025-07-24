@@ -16,6 +16,8 @@ export class ItemOder extends Component
     @property( Node )
     public checkNode: Node;
 
+    public isCompleted: boolean = false;
+
     protected start (): void
     {
         this.oderCountLabel.string = this.oderCount.toString();
@@ -23,14 +25,14 @@ export class ItemOder extends Component
 
     public onItemOnShelf (): void
     {
-        let startScale = this.node.scale;
+        let startScale = this.node.scale.clone();
         let newScale = startScale.clone();
-        newScale.x *= 1.1;
-        newScale.y *= 1.1;
-        newScale.z *= 1.1;
+        newScale.x *= 1.15;
+        newScale.y *= 1.15;
+        newScale.z *= 1.15;
         tween( this.node )
-            .to( 0.1, { scale: newScale }, { easing: 'bounceOut' } )
-            .to( 0.1, { scale: startScale }, { easing: 'bounceOut' } )
+            .to( 0.15, { scale: newScale }, { easing: 'smooth' } )
+            .to( 0.15, { scale: startScale }, { easing: 'smooth' } )
             .start();
     }
 }

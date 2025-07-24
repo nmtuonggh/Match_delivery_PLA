@@ -3,6 +3,7 @@ import { ItemOder } from './ItemOder';
 import { EventListener } from '../../GameEvent/EventListener';
 import { GameEvent } from '../../GameEvent/GameEvent';
 import { ItemType } from '../Object/Item';
+import { GameController } from '../../Manager/GameController';
 const { ccclass, property } = _decorator;
 
 @ccclass( 'ItemOderController' )
@@ -40,6 +41,15 @@ export class ItemOderController extends Component
         this.animInit();
     }
 
+    protected update ( dt: number ): void
+    {
+        if ( this.isAllCompleted() && !GameController.instance.isWin )
+        {
+            GameController.instance.onDisableInput();
+            GameController.instance.winGame();
+        }
+    }
+
     init (): void
     {
         this.listItemOders = this.itemOderNode.getComponentsInChildren( ItemOder );
@@ -59,26 +69,27 @@ export class ItemOderController extends Component
         // Hiển thị và tạo hiệu ứng xoay lần lượt cho từng item
         for ( let i = 0; i < this.listItemOders.length; i++ )
         {
-            const itemOder = this.listItemOders[i];
+            const itemOder = this.listItemOders[ i ];
             const delay = i * 0.05; // Độ trễ giữa các item, tăng dần theo thứ tự
 
             // Sau khi delay, hiển thị node và bắt đầu hiệu ứng
-            this.scheduleOnce(() => {
+            this.scheduleOnce( () =>
+            {
                 itemOder.node.active = true;
-                
+
                 // Thiết lập rotation ban đầu (0 độ)
                 const quat = new Quat();
-                Quat.fromEuler(quat, 0, -90, 0); // Góc ban đầu
-                itemOder.node.setRotation(quat);
-                
+                Quat.fromEuler( quat, 0, -90, 0 ); // Góc ban đầu
+                itemOder.node.setRotation( quat );
+
                 // Tạo hiệu ứng xoay 360 độ theo trục Y
                 const endQuat = new Quat();
-                Quat.fromEuler(endQuat, 0, 0, 0); // Góc kết thúc (0 độ)
-                
-                tween(itemOder.node)
-                    .to(0.5, { rotation: endQuat }) // Xoay về góc 0 độ
+                Quat.fromEuler( endQuat, 0, 0, 0 ); // Góc kết thúc (0 độ)
+
+                tween( itemOder.node )
+                    .to( 0.5, { rotation: endQuat } ) // Xoay về góc 0 độ
                     .start();
-            }, delay);
+            }, delay );
         }
     }
 
@@ -144,7 +155,13 @@ export class ItemOderController extends Component
         {
             if ( itemOder.itemType === itemType )
             {
-                itemOder.checkNode.active = true;
+                itemOder.isCompleted = true;
+                this.scheduleOnce( () =>
+                {
+                    tween( itemOder.node )
+                        .to( 0.15, { scale: new Vec3( 0, 0, 0 ) }, { easing: 'smooth' } )
+                        .start();
+                }, 0.1 );
             }
         }
     }
@@ -165,7 +182,7 @@ export class ItemOderController extends Component
     }
 
 
-    private onItemOnShelf (itemType: ItemType): void
+    private onItemOnShelf ( itemType: ItemType ): void
     {
         for ( const itemOder of this.listItemOders )
         {
@@ -174,6 +191,15 @@ export class ItemOderController extends Component
                 itemOder.onItemOnShelf();
             }
         }
+    }
+
+    isAllCompleted (): boolean
+    {
+        for ( const itemOder of this.listItemOders )
+        {
+            if ( !itemOder.isCompleted ) return false;
+        }
+        return true;
     }
 }
 

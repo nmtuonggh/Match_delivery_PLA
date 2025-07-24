@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, tween, Vec3, Tween, TweenSystem } from 'cc';
+import { _decorator, Component, Node, tween, Vec3, Tween, TweenSystem, Prefab, instantiate, Canvas, UITransform, view, Camera, Vec2, director } from 'cc';
 import { ShelfSlot } from './ShelfSlot';
 import { Item } from '../Object/Item';
 import { EventListener } from '../../GameEvent/EventListener';
@@ -14,6 +14,13 @@ export class ShelfContainer extends Component
     //#region Editor fields
     @property( { type: [ ShelfSlot ] } )
     public listShelfSlots: ShelfSlot[] = [];
+    @property(Prefab)
+    public matchEffect: Prefab = null;
+    
+    @property(Camera)
+    public Camera: Camera = null;
+    @property(Node)
+    public canvas: Node = null;
     //#endregion
 
     static instance: ShelfContainer = null;
@@ -253,6 +260,23 @@ export class ShelfContainer extends Component
 
         // Chờ hai item bên ngoài di chuyển xong
         await Promise.all( moveToMiddlePromises );
+        
+        // Spawn hiệu ứng match tại vị trí item giữa
+        if (this.matchEffect && this.Camera) {
+            // Tạo hiệu ứng và thêm vào Canvas node
+            const effectNode = instantiate(this.matchEffect);
+            this.canvas.addChild(effectNode);
+                
+                // Chuyển đổi vị trí từ 3D sang 2D (UI)
+                const uiPos = new Vec3();
+                this.Camera.convertToUINode(middlePos, this.canvas, uiPos);
+                effectNode.setPosition(uiPos);
+                
+                // Tự động hủy hiệu ứng sau 1 giây
+                this.scheduleOnce(() => {
+                    effectNode.destroy();
+                }, 1.0);
+        }
 
         // 3. Hiệu ứng mất đi (scale xuống 0 và tạo effect)
         const disappearPromises = items.map( item =>
