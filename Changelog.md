@@ -16,6 +16,11 @@ Tất cả thay đổi đáng chú ý sẽ được ghi lại trong file này.
   - Tự động phát hiện và tiêu diệt 3 item cùng loại liên tiếp
   - Hỗ trợ animation khi match và destroy item
   - Tự động sắp xếp lại các item sau khi match
+- Component `ShelfGridHozirontal` để căn chỉnh các node con theo chiều ngang
+  - Hỗ trợ cấu hình khoảng cách (`spacing`) và padding
+  - Tự động tính toán vị trí của các node con
+  - Tính năng căn giữa (`alignCenter`) và căn từ mép trái
+  - Các phương thức `addChild()`, `removeChild()` và `updateContainerWidth()` để quản lý node con và cập nhật vị trí
 
 ### Changed
 - Cập nhật `Item.pick()` để kiểm tra trạng thái matching và ngăn người chơi nhặt item khi đang xử lý match

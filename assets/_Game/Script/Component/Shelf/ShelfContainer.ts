@@ -14,12 +14,14 @@ export class ShelfContainer extends Component
     //#region Editor fields
     @property( { type: [ ShelfSlot ] } )
     public listShelfSlots: ShelfSlot[] = [];
-    @property(Prefab)
+    @property( Node )
+    public listShelfRender: Node[] = [];
+    @property( Prefab )
     public matchEffect: Prefab = null;
-    
-    @property(Camera)
+
+    @property( Camera )
     public Camera: Camera = null;
-    @property(Node)
+    @property( Node )
     public canvas: Node = null;
     //#endregion
 
@@ -112,12 +114,13 @@ export class ShelfContainer extends Component
                     this.checkAndDestroyMatched( checkMatchedIndex );
                 } );
             }
-            else if(this.isFullSlot())
+            else if ( this.isFullSlot() )
             {
                 GameController.instance.onDisableInput();
-                this.scheduleOnce(() => {
+                this.scheduleOnce( () =>
+                {
                     GameController.instance.loseGame();
-                }, 0.5);
+                }, 0.5 );
             }
         } );
     }
@@ -155,7 +158,7 @@ export class ShelfContainer extends Component
         {
             let item = this.listPickedItem[ i ];
             item.sortItem( i );
-            await new Promise( resolve => setTimeout( resolve, 50) );
+            await new Promise( resolve => setTimeout( resolve, 50 ) );
         }
     }
     //#endregion
@@ -171,32 +174,30 @@ export class ShelfContainer extends Component
 
         const currentItemType = this.listPickedItem[ itemIndex ].itemType;
 
-        // Kiểm tra 3 item liên tiếp có cùng loại
-        // Theo yêu cầu, chúng ta match với 2 item phía trước
         if ( itemIndex >= 2 &&
             this.listPickedItem[ itemIndex - 1 ]?.itemType === currentItemType &&
             this.listPickedItem[ itemIndex - 2 ]?.itemType === currentItemType )
         {
-
-            // Lấy 3 item cần destroy
             const itemsToDestroy = [
                 this.listPickedItem[ itemIndex - 2 ],
                 this.listPickedItem[ itemIndex - 1 ],
                 this.listPickedItem[ itemIndex ]
             ];
 
-            // Xóa khỏi danh sách
             this.listPickedItem.splice( itemIndex - 2, 3 );
             this.currentItemCount -= 3;
 
-            // Animation destroy
+            itemsToDestroy.forEach( item =>
+            {
+                Tween.stopAllByTarget(item.node);
+            } );
+            //stop all tween cho các slot tương ứng với 3 item cần destroy
+
             await this.destroyMatchedItems( itemsToDestroy );
 
-            // Sort lại sau khi destroy
             await this.sortItemAfterMatch();
         }
 
-        // Reset cờ match
         this.isMatching = false;
     }
     //#endregion
@@ -212,12 +213,10 @@ export class ShelfContainer extends Component
             return;
         }
 
-        // Lấy ra item ở giữa và hai item ở hai bên
         const leftItem = items[ 0 ];
         const middleItem = items[ 1 ];
         const rightItem = items[ 2 ];
 
-        // 1. Tất cả các item nhảy lên trên một chút
         const jumpPromises = items.map( item =>
         {
             return new Promise<void>( ( resolve ) =>
@@ -225,7 +224,7 @@ export class ShelfContainer extends Component
                 const startPos = item.node.worldPosition.clone();
                 const jumpPos = new Vec3(
                     startPos.x,
-                    startPos.y + 0.5, // Nhảy lên 0.5 đơn vị
+                    startPos.y + 0.5,
                     startPos.z
                 );
 
@@ -236,10 +235,7 @@ export class ShelfContainer extends Component
             } );
         } );
 
-        // Chờ tất cả các item nhảy lên xong
         await Promise.all( jumpPromises );
-
-        // 2. Hai item bên ngoài di chuyển vào vị trí của item giữa
         const middlePos = middleItem.node.worldPosition.clone();
         const moveToMiddlePromises = [
             new Promise<void>( ( resolve ) =>
@@ -258,37 +254,29 @@ export class ShelfContainer extends Component
             } )
         ];
 
-        // Chờ hai item bên ngoài di chuyển xong
         await Promise.all( moveToMiddlePromises );
-        
-        // Spawn hiệu ứng match tại vị trí item giữa
-        if (this.matchEffect && this.Camera) {
-            // Tạo hiệu ứng và thêm vào Canvas node
-            const effectNode = instantiate(this.matchEffect);
-            this.canvas.addChild(effectNode);
-                
-                // Chuyển đổi vị trí từ 3D sang 2D (UI)
-                const uiPos = new Vec3();
-                this.Camera.convertToUINode(middlePos, this.canvas, uiPos);
-                effectNode.setPosition(uiPos);
-                
-                // Tự động hủy hiệu ứng sau 1 giây
-                this.scheduleOnce(() => {
-                    effectNode.destroy();
-                }, 1.0);
+
+        if ( this.matchEffect && this.Camera )
+        {
+            const effectNode = instantiate( this.matchEffect );
+            this.canvas.addChild( effectNode );
+            const uiPos = new Vec3();
+            this.Camera.convertToUINode( middlePos, this.canvas, uiPos );
+            effectNode.setPosition( uiPos );
+            this.scheduleOnce( () =>
+            {
+                effectNode.destroy();
+            }, 1.0 );
         }
 
-        // 3. Hiệu ứng mất đi (scale xuống 0 và tạo effect)
         const disappearPromises = items.map( item =>
         {
             return new Promise<void>( ( resolve ) =>
             {
-                // Hiệu ứng scale xuống 0 trước khi destroy
                 tween( item.node )
                     .to( 0.2, { scale: new Vec3( 0, 0, 0 ) }, { easing: 'backIn' } )
                     .call( () =>
                     {
-                        // TODO: Có thể thêm hiệu ứng particle ở đây nếu cần
                         item.node.destroy();
                         resolve();
                     } )
@@ -296,19 +284,32 @@ export class ShelfContainer extends Component
             } );
         } );
 
-        // Chờ tất cả các item biến mất
-        EventListener.emit(GameEvent.ItemMatched, items[0].itemType, 3);
+        EventListener.emit( GameEvent.ItemMatched, items[ 0 ].itemType, 3 );
         AudioSystem.instance.playMatchObj();
         await Promise.all( disappearPromises );
     }
 
-    /**
-     * Kiểm tra xem có đang trong quá trình match không
-     */
+    //#region IsInMatching
     public isInMatching (): boolean
     {
         return this.isMatching;
     }
+    //#endregion
 
+    //#region Bounce
+    public async bounceSlotRender (boundcePower: number, index: number ): Promise<void>
+    {
+        let render = this.listShelfRender[ index ];
+        let offsetBounce = boundcePower;
+        let startPos = render.worldPosition.clone();
+        let newPosition = new Vec3( startPos.x, startPos.y - offsetBounce, startPos.z );
+        if ( render )
+        {
+            tween( render )
+                .to( 0.08, { worldPosition: newPosition }, { easing: 'sineIn' } )
+                .to( 0.8, { worldPosition: startPos }, { easing: 'elasticOut' } )
+                .start();
+        }
+    }
     //#endregion
 }

@@ -1,4 +1,4 @@
-import { _decorator, Component, Enum, Node, RigidBody, tween, Vec3 } from 'cc';
+import { _decorator, Component, Enum, Node, RigidBody, Tween, tween, Vec3 } from 'cc';
 import { IdleState } from './FSM/IdleState';
 import { PickedState } from './FSM/PickedState';
 import { MovingState } from './FSM/MovingState';
@@ -38,6 +38,7 @@ export class Item extends Component
     //public animationMoveDone: boolean = false;
     public sortPromise: Promise<void> | null = null;
     public animationPromise: Promise<void> | null = null;
+    public bouncePromise: Promise<void> | null = null;
 
     //#endregion
 
@@ -117,7 +118,7 @@ export class Item extends Component
 
     public async sortItem ( newIndexPos: number ): Promise<void>
     {
-        window.item = this;
+        //window.item = this;
         let currentIndex = this.currentShelfIndexSlot;
         let delay = newIndexPos > currentIndex ? 0 : currentIndex * 0.001;
         if ( delay > 0 )
@@ -132,22 +133,28 @@ export class Item extends Component
                 let targetSlotPos = this.getSlotPosition( i );
                 let startPos = this.node.worldPosition;
                 let endPos = targetSlotPos;
+                let jumpHeight = 1;
 
                 const controlPoint = new Vec3(
                     ( startPos.x + endPos.x ) / 2,
-                    Math.max( startPos.y, endPos.y ) + 1, // +1 là chiều cao nhảy, điều chỉnh phù hợp
+                    Math.max( startPos.y, endPos.y ) + jumpHeight,
                     ( startPos.z + endPos.z ) / 2
                 );
 
                 this.sortPromise = BezierTweenWorld(
                     this.node,
-                    VariableConfig.SORT_TIME, // Thời gian tương đương với InGameController.sortTime
+                    VariableConfig.SORT_TIME,
                     startPos,
                     controlPoint,
                     endPos
-                );
+                ).then( () =>
+                {
+                   this.bounceItem( 0.5 );
+                   this.bouncePromise = ShelfContainer.instance.bounceSlotRender( 0.5, i );
+                } );
                 await this.sortPromise;
                 this.currentShelfIndexSlot = i;
+                await new Promise( resolve => setTimeout( resolve, 200 ) );
             }
         } else
         {
@@ -169,9 +176,15 @@ export class Item extends Component
                     startPos,
                     controlPoint,
                     endPos
-                );
+                ).then( () =>
+                {
+                   this.bounceItem( 0.5 );
+                   this.bouncePromise = ShelfContainer.instance.bounceSlotRender( 0.5, i - 1 );
+                } );
                 await this.sortPromise;
+                await this.bouncePromise;
                 this.currentShelfIndexSlot = i - 1;
+                await new Promise( resolve => setTimeout( resolve, 200 ) );
             }
         }
         //this.currentShelfIndexSlot = newIndexPos;
@@ -180,6 +193,21 @@ export class Item extends Component
     public getSlotPosition ( index: number ): Vec3
     {
         return ShelfContainer.instance.listShelfSlots[ index ].node.worldPosition;
+    }
+
+    public bounceItem (boundcePower: number): void
+    {
+        Tween.stopAllByTarget(this.node);
+        let offsetBounce = boundcePower;
+        let startPos = this.node.worldPosition.clone();
+        let newPosition = new Vec3( startPos.x, startPos.y - offsetBounce, startPos.z );
+        if ( this.node )
+        {
+            tween( this.node )
+                .to( 0.08, { worldPosition: newPosition }, { easing: 'sineIn' } )
+                .to( 0.8, { worldPosition: startPos }, { easing: 'elasticOut' } )
+                .start();
+        }
     }
 }
 export { ItemType };

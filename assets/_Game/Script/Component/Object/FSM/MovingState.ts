@@ -64,7 +64,7 @@ export class MovingState implements IState
             .to( VariableConfig.ANIMATIONITEM_TIME, { scale: shelfScale }, { easing: 'bounceOut' } )
             .start()
         let startPos = item.node.getWorldPosition();
-        let endPos = slot.node.getWorldPosition();
+        let endPos = slot.node.getWorldPosition().clone();
         let midPoint = new Vec3();
         Vec3.lerp( midPoint, startPos, endPos, 0.5 );
         let direction = new Vec3();
@@ -79,8 +79,16 @@ export class MovingState implements IState
         ShelfContainer.instance.listAnimationPromise.push( item.animationPromise );
         item.animationPromise.then( () =>
         {
+            //item.node.setParent(slot.node);
+            item.bounceItem(1);
+            ShelfContainer.instance.bounceSlotRender( 1, item.currentShelfIndexSlot );
+            // tween(item.node)
+            // .to(0.1, { worldPosition: slot.node.getWorldPosition().clone().add(new Vec3(0, -1, 0)) }, { easing: 'backInOut' })
+            // .to(0.1, { worldPosition: slot.node.getWorldPosition() }, { easing: 'backInOut' })
+            // .start();
             item.onShelf();
             ShelfContainer.instance.listAnimationPromise.splice( ShelfContainer.instance.listAnimationPromise.indexOf( item.animationPromise ), 1 );
         } );
+
     }
 }

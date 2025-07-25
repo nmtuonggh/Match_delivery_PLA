@@ -17,7 +17,7 @@ export class OnShelfState implements IState
     {
         //console.log( `${ item.node.name } đã vào trạng thái OnShelf` );
         //reset góc
-        item.node.setRotationFromEuler( 0, 0, 0 );
+        item.node.setRotationFromEuler( 20, 180, 0 );
         EventListener.emit( GameEvent.ItemOnShelf, item.itemType );
     }
 
