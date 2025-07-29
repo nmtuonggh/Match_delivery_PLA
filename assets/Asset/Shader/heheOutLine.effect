@@ -1,0 +1,220 @@
+CCEffect %{
+  techniques:
+  - name: opaque
+    passes:
+    - vert: unlit-vs:vert
+      frag: unlit-fs:frag
+      properties: &props
+        mainColor:      { value: [0, 0, 0, 1], linear: true, editor: { type: color } }
+        mainTexture:    { value: white }
+        shadowSetting:	{ value: [0.0,1.0,0.5,10.0]}
+        smoothness:	{ value: 0.5, target: advanceSetup.x, editor: { parent: USE_ADVANCE, slide: true, range: [0, 1.0], step: 0.001 }}
+        specularStrength:	{ value: 1, target: advanceSetup.y, editor: { parent: USE_ADVANCE, slide: true, range: [0, 1.0], step: 0.001 }}
+        fresnelColor:      { value: [1, 1, 1, 1], linear: true, editor: { parent: USE_ADVANCE, type: color } }
+        fresnelPower:	{ value: 10, target: advanceSetup.z, editor: { parent: USE_ADVANCE }}
+        transparent:	{ value: 0.5, editor: { slide: true, range: [0, 1.0], step: 0.001 }}
+    - switch: USE_OUTLINE_PASS
+      vert: silhouette-edge-vs
+      frag: silhouette-edge-fs
+      rasterizerState: &r1
+        cullMode: front
+      depthStencilState: &d1
+        depthFunc: less_equal
+        depthTest: true
+        depthWrite: true
+      properties:
+        lineWidth:     { value: 10, target: outlineParams.x }
+        depthBias:     { value: 0,  target: outlineParams.y }
+        baseColor:     { value: [1.0, 0.5, 0.0, 1.0], linear: true, editor: { type: color } }
+        baseColorMap:  { value: white }
+        outlineColor:  { value: [1.0, 0.5, 0.0, 1.0], target: baseColor, linear: true, editor: { displayName: OutlineColor, type: color } }
+  - name: transparent
+    passes:
+    - vert: unlit-vs:vert
+      frag: unlit-fs:frag
+      depthStencilState: &d1
+        depthTest: true
+        depthWrite: false
+      blendState: &b1
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      properties: *props
+}%
+
+CCProgram unlit-vs %{
+  precision mediump float;
+  #include <legacy/input>
+  #include <builtin/uniforms/cc-global>
+  #include <legacy/local-batch>
+
+  out mediump vec2 v_uv;
+  out mediump vec3 v_worldNormal;
+  out mediump vec3 v_viewDir;
+  #if USE_ADVANCE
+	out mediump vec2 v_matCap;
+  #endif
+
+  mediump vec4 vert () {
+    mediump vec4 position;
+    CCVertInput(position);
+
+    mediump mat4 matWorld, matWorldIT;
+    CCGetWorldMatrixFull(matWorld, matWorldIT);
+
+    v_uv = a_texCoord;
+    #if USE_LOCAL
+      v_worldNormal = a_normal;
+      v_viewDir = vec3(0,1,0);
+    #else
+      v_viewDir = cc_cameraPos.xyz-(matWorld*position).xyz;
+      v_worldNormal = normalize((matWorldIT * vec4(a_normal, 0.0)).xyz);
+    #endif
+	
+	
+	#if USE_ADVANCE
+		highp vec2 muv = vec2(cc_matView * vec4(normalize(a_normal), 0))*0.5+vec2(0.5,0.5);
+		v_matCap = vec2(muv.x, 1.0-muv.y);
+	#endif
+
+    return cc_matProj * (cc_matView * matWorld) * position;
+  }
+}%
+
+CCProgram unlit-fs %{
+  precision mediump float;
+  #include <legacy/output-standard>
+  #include <builtin/uniforms/cc-global>
+  #include <common/lighting/functions>
+  
+  
+  in mediump vec2 v_uv;
+  in mediump vec3 v_worldNormal;
+  in mediump vec3 v_viewDir;
+  
+  uniform sampler2D mainTexture;
+
+  uniform Constant {
+    mediump vec4 mainColor;
+    mediump vec4 shadowSetting;
+    mediump float transparent;
+  };
+  #if USE_ADVANCE
+	in mediump vec2 v_matCap;
+	uniform Addons {
+		mediump vec4 advanceSetup;
+		mediump vec4 fresnelColor;
+	};
+  #endif
+
+
+  mediump vec4 frag () {
+    mediump vec4 base = texture(mainTexture, v_uv);
+    base.rgb = SRGBToLinear(base.rgb);
+	base*=mainColor;	
+	mediump vec4 col = base;
+	//
+	// Simple lighting calculation
+	// Thay vì dùng cc_mainLitDir, bạn có thể định nghĩa hướng ánh sáng tùy chỉnh
+	mediump vec3 lightDir = normalize(vec3(0, 1.0, 0)); // Ánh sáng từ trên trái
+	mediump float NdotL = max(dot(normalize(v_worldNormal), lightDir), 0.0);
+	mediump float shadow = mix(shadowSetting.x, shadowSetting.y, NdotL);
+	col.rgb *= shadow;
+	//
+	#if USE_ADVANCE
+		mediump float plastic = step(0.671875,1.0-v_uv.y);
+		if(plastic == 0.0)
+		{
+			// Simple specular calculation
+			mediump vec3 viewDir = normalize(v_viewDir);
+			mediump vec3 reflectDir = reflect(-lightDir, normalize(v_worldNormal));
+			mediump float spec = pow(max(dot(viewDir, reflectDir), 0.0), shadowSetting.w);
+			col.rgb += col.rgb * spec * advanceSetup.y;
+			mediump float fres = pow((1.0 - clamp(dot(normalize(v_worldNormal), normalize(v_viewDir)),0.0,1.0)), advanceSetup.z);
+			col.rgb = mix(col.rgb,col.rgb+fresnelColor.rgb,fres*fresnelColor.a);
+		}
+	#endif
+	col.a = transparent;
+    return CCFragOutput(col); 
+  }
+}%
+
+
+
+
+
+////////////////////////////////////////////////silhouette-edge sample
+// how to write a simple surface material
+// change technique outline-vs/fs:vert/frag to silhouette-edge-vs/fs
+CCProgram surface-vertex-silhouette-edge %{
+  uniform OutlineVert {
+  vec4 outlineParams; // x: line width, y: depth hack
+};
+
+  #define CC_SURFACES_VERTEX_MODIFY_LOCAL_POS
+  vec3 SurfacesVertexModifyLocalPos(in SurfacesStandardVertexIntermediate In)
+  {
+    float width = outlineParams.x * 0.001;
+    vec3 localPos = In.position.xyz;
+
+  #if USE_POSITION_SCALING
+    vec3 dir = normalize(localPos);
+    float flip = dot(dir, normalize(In.normal)) < 0.0 ? -1.0 : 1.0;
+    localPos += flip * dir * width * 2.0;
+  #else
+    localPos += normalize(In.normal) * width;
+  #endif
+    return localPos;
+  }
+
+  #define CC_SURFACES_VERTEX_MODIFY_CLIP_POS
+  vec4 SurfacesVertexModifyClipPos(in SurfacesStandardVertexIntermediate In)
+  {
+    vec4 clipPos = In.clipPos;
+    float scaleZ = cc_nearFar.z == 0.0 ? 0.5 : 1.0;
+    clipPos.z -= outlineParams.y * 0.002 * scaleZ;
+    return clipPos;
+  }
+}%
+
+CCProgram surface-fragment-silhouette-edge %{
+  uniform OutlineFrag {
+    vec4 baseColor;
+  };
+  #if USE_BASE_COLOR_MAP
+    uniform sampler2D baseColorMap;
+  #endif
+
+  // only for render-to-shadow-map or misc usage
+  #define CC_SURFACES_FRAGMENT_MODIFY_BASECOLOR_AND_TRANSPARENCY
+  vec4 SurfacesFragmentModifyBaseColorAndTransparency()
+  {
+    vec4 color = vec4(cc_mainLitColor.rgb, 1.0);
+    color.rgb = SRGBToLinear(baseColor.rgb);
+    #if USE_BASE_COLOR_MAP
+      vec4 texColor = texture(baseColorMap, FSInput_texcoord);
+      texColor.rgb = SRGBToLinear(texColor.rgb);
+      color *= texColor;
+    #endif
+
+    return color;
+  }
+}%
+
+CCProgram silhouette-edge-vs %{
+  precision highp float;
+  #include <surfaces/effect-macros/silhouette-edge>
+  #include <surfaces/includes/common-vs>
+  #include <surface-vertex-silhouette-edge>
+  #include <shading-entries/main-functions/misc/silhouette-edge-vs>
+}%
+
+CCProgram silhouette-edge-fs %{
+  precision highp float;
+  #include <surfaces/effect-macros/silhouette-edge>
+  #include <surfaces/includes/common-fs>
+  #include <surface-fragment-silhouette-edge>
+  #include <shading-entries/main-functions/misc/silhouette-edge-fs>
+}%

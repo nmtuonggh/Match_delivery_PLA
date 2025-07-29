@@ -5,67 +5,17 @@
   "__editorExtras__": {},
   "_native": "",
   "_effectAsset": {
-    "__uuid__": "9b20a514-6cc3-49de-b216-b6b863046249",
+    "__uuid__": "32beb01c-ce0f-47b8-bc60-a2db6d5e41e6",
     "__expectedType__": "cc.EffectAsset"
   },
   "_techIdx": 0,
   "_defines": [
+    {},
     {
       "USE_OUTLINE_PASS": true
-    },
-    {},
-    {},
-    {},
-    {},
-    {},
-    {}
+    }
   ],
   "_states": [
-    {
-      "rasterizerState": {},
-      "depthStencilState": {},
-      "blendState": {
-        "targets": [
-          {}
-        ]
-      }
-    },
-    {
-      "rasterizerState": {},
-      "depthStencilState": {},
-      "blendState": {
-        "targets": [
-          {}
-        ]
-      }
-    },
-    {
-      "rasterizerState": {},
-      "depthStencilState": {},
-      "blendState": {
-        "targets": [
-          {}
-        ]
-      }
-    },
-    {
-      "rasterizerState": {},
-      "depthStencilState": {},
-      "blendState": {
-        "targets": [
-          {}
-        ]
-      }
-    },
-    {
-      "rasterizerState": {},
-      "depthStencilState": {},
-      "blendState": {
-        "targets": [
-          {}
-        ]
-      }
-    },
     {
       "rasterizerState": {},
       "depthStencilState": {},
@@ -87,20 +37,34 @@
   ],
   "_props": [
     {
-      "lineWidth": 80.7,
-      "baseColor": {
+      "mainColor": {
+        "__type__": "cc.Color",
+        "r": 255,
+        "g": 255,
+        "b": 255,
+        "a": 255
+      },
+      "mainTexture": {
+        "__uuid__": "20cf879a-2275-41cf-ab0b-65395d2d7717@6c48a",
+        "__expectedType__": "cc.Texture2D"
+      },
+      "shadowSetting": {
+        "__type__": "cc.Vec4",
+        "x": 0.1,
+        "y": 1.2,
+        "z": 0.45,
+        "w": 10
+      }
+    },
+    {
+      "lineWidth": 55,
+      "outlineColor": {
         "__type__": "cc.Color",
         "r": 255,
         "g": 255,
         "b": 255,
         "a": 255
       }
-    },
-    {},
-    {},
-    {},
-    {},
-    {},
-    {}
+    }
   ]
 }
