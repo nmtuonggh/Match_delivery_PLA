@@ -52,43 +52,61 @@ export class ObjectSpawnerDemo extends Component
         tooltip: 'Tên tương ứng với các prefab (phải khớp với ObjectType)'
     } )
     private prefabNames: string[] = [];
-    
+
     // Các biến điều khiển chọn đối tượng spawn
-    @property({
+    @property( {
         type: [ Number ],
         tooltip: 'Vị trí index của các đối tượng cần spawn'
-    })
+    } )
     private indexObj: number[] = [];
-    
-    @property({
+
+    @property( {
         type: [ Number ],
         tooltip: 'Số lượng spawn tương ứng với từng indexObj'
-    })
+    } )
     private spawnCount: number[] = [];
-    
-    @property({
+
+    @property( {
         tooltip: 'Nếu true, spawn tất cả các loại đối tượng'
-    })
+    } )
     private spawnAll: boolean = false;
-    
-    @property({
+
+    @property( {
         tooltip: 'Số lượng spawn cho mỗi loại nếu spawnAll = true',
-        visible: function() { return this.spawnAll; }
-    })
+        visible: function () { return this.spawnAll; }
+    } )
     private spawnAllCount: number = 10;
+
+
+
     start ()
     {
-        // Khởi tạo Factory với container làm parent node
+        this.init();
+
+        // Thiết lập các button events
+        if ( this.spawnCubeBtn )
+        {
+            // Nút spawn tất cả các loại đối tượng
+            this.spawnCubeBtn.node.on( Button.EventType.CLICK, this.onSpawnObj, this );
+        }
+
+        if ( this.clearBtn )
+        {
+            // Nút xóa tất cả các đối tượng
+            this.clearBtn.node.on( Button.EventType.CLICK, this.onClearObjects, this );
+        }
+    }
+
+    init()
+    {
         ObjectFactory.instance.initialize( this.objectContainer );
 
-        // Kiểm tra số lượng prefab và tên có khớp nhau
         if ( this.prefabs.length !== this.prefabNames.length )
         {
             console.error( 'Số lượng prefab và tên không khớp nhau!' );
             return;
         }
 
-        // Xử lý tất cả các prefab trong một vòng lặp
         for ( let i = 0; i < this.prefabs.length; i++ )
         {
             const prefab = this.prefabs[ i ];
@@ -109,18 +127,39 @@ export class ObjectSpawnerDemo extends Component
             // Khởi tạo mảng cho loại đối tượng này trong spawnedObjects
             this.spawnedObjects.set( objType.toString(), [] );
         }
+    }
 
-        // Thiết lập các button events
-        if ( this.spawnCubeBtn )
+    @property()
+    private get MakeMap2 () { return false }
+    private set MakeMap2 ( value: boolean )
+    {
+        let oldChilds = this.objectContainer.children;
+        for ( let i = 0; i < oldChilds.length; i++ )
         {
-            // Nút spawn tất cả các loại đối tượng
-            this.spawnCubeBtn.node.on( Button.EventType.CLICK, this.onSpawnObj, this );
+            oldChilds[ i ].destroy();
         }
 
-        if ( this.clearBtn )
+        this.onSpawnAllObj();
+    }
+
+    async onSpawnAllObj ()
+    {
+        this.init();
+        console.log( `Spawn tất cả các loại đối tượng, mỗi loại ${ this.spawnAllCount } cái` );
+
+        for ( const prefabInfo of this.prefabsToSpawn )
         {
-            // Nút xóa tất cả các đối tượng
-            this.clearBtn.node.on( Button.EventType.CLICK, this.onClearObjects, this );
+            for ( let i = 0; i < this.spawnAllCount; i++ )
+            {
+                let position = this.getRandomPosition();
+                const obj = await ObjectFactory.instance.spawn( prefabInfo.type, position );
+
+                if ( obj )
+                {
+                    console.log( `Đã spawn ${ prefabInfo.type } tại`, position );
+                    this.spawnedObjects.get( prefabInfo.type.toString() ).push( obj );
+                }
+            }
         }
     }
 
@@ -150,7 +189,7 @@ export class ObjectSpawnerDemo extends Component
         {
             // Nếu chọn spawn tất cả, spawn mỗi loại đối tượng với số lượng spawnAllCount
             console.log( `Spawn tất cả các loại đối tượng, mỗi loại ${ this.spawnAllCount } cái` );
-            
+
             for ( const prefabInfo of this.prefabsToSpawn )
             {
                 for ( let i = 0; i < this.spawnAllCount; i++ )
@@ -170,30 +209,30 @@ export class ObjectSpawnerDemo extends Component
         {
             // Nếu không chọn spawn tất cả, spawn theo indexObj và spawnCount
             console.log( 'Spawn theo cấu hình indexObj và spawnCount' );
-            
+
             // Kiểm tra số lượng index và count có khớp nhau không
             if ( this.indexObj.length !== this.spawnCount.length )
             {
                 console.error( 'Số lượng indexObj và spawnCount không khớp!' );
                 return;
             }
-            
+
             // Duyệt qua từng cặp indexObj và spawnCount
             for ( let i = 0; i < this.indexObj.length; i++ )
             {
-                const index = this.indexObj[i];
-                const count = this.spawnCount[i];
-                
+                const index = this.indexObj[ i ];
+                const count = this.spawnCount[ i ];
+
                 // Kiểm tra index hợp lệ
                 if ( index < 0 || index >= this.prefabsToSpawn.length )
                 {
                     console.error( `Index không hợp lệ: ${ index }` );
                     continue;
                 }
-                
+
                 // Lấy prefab info tương ứng
-                const prefabInfo = this.prefabsToSpawn[index];
-                
+                const prefabInfo = this.prefabsToSpawn[ index ];
+
                 // Spawn đối tượng với số lượng cấu hình
                 for ( let j = 0; j < count; j++ )
                 {

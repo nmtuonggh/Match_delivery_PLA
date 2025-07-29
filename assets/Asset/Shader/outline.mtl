@@ -11,6 +11,7 @@
   "_techIdx": 0,
   "_defines": [
     {},
+    {},
     {}
   ],
   "_states": [
@@ -31,29 +32,20 @@
           {}
         ]
       }
+    },
+    {
+      "rasterizerState": {},
+      "depthStencilState": {},
+      "blendState": {
+        "targets": [
+          {}
+        ]
+      }
     }
   ],
   "_props": [
-    {
-      "mainColor": {
-        "__type__": "cc.Color",
-        "r": 245,
-        "g": 245,
-        "b": 245,
-        "a": 255
-      },
-      "mainTexture": {
-        "__uuid__": "20cf879a-2275-41cf-ab0b-65395d2d7717@6c48a",
-        "__expectedType__": "cc.Texture2D"
-      },
-      "shadowSetting": {
-        "__type__": "cc.Vec4",
-        "x": 0.1,
-        "y": 1.2,
-        "z": 0.45,
-        "w": 10.5
-      }
-    },
+    {},
+    {},
     {}
   ]
 }

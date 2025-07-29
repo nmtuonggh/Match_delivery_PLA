@@ -7,6 +7,7 @@ import { EventListener } from '../../../GameEvent/EventListener';
 import { GameEvent } from '../../../GameEvent/GameEvent';
 import { ShelfSlot } from '../../Shelf/ShelfSlot';
 import { VariableConfig } from '../../../Config/VariableConfig';
+import { PickObjHandler } from '../../../Interact/PickObjHandler';
 const { ccclass, property } = _decorator;
 
 @ccclass( 'MovingState' )
@@ -18,6 +19,7 @@ export class MovingState implements IState
 
     public enter ( item: Item ): void
     {
+        PickObjHandler.instance.turnOffOutline(item.node);
         //Physics
         item.rb.isKinematic = true;
 

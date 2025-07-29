@@ -5,6 +5,11 @@ Tất cả thay đổi đáng chú ý sẽ được ghi lại trong file này.
 ## [Unreleased]
 
 ### Added
+- Shader effect `outline` cho object 3D trong `effect.effect`
+  - Hỗ trợ điều chỉnh màu sắc outline qua thuộc tính `outlineColor`
+  - Hỗ trợ điều chỉnh độ dày outline qua thuộc tính `outlineWidth` (0.0 - 0.05)
+  - Hỗ trợ điều chỉnh cường độ outline qua thuộc tính `outlineIntensity` (0.0 - 5.0)
+  - Tương thích với Cocos Creator 3.8.6
 - Hệ thống `ObjectFactory` để spawn và quản lý các game object với object pooling
   - `ObjectType` enum để định nghĩa các loại object
   - `IObjectFactory` interface định nghĩa các phương thức cơ bản cho factory
@@ -21,6 +26,13 @@ Tất cả thay đổi đáng chú ý sẽ được ghi lại trong file này.
   - Tự động tính toán vị trí của các node con
   - Tính năng căn giữa (`alignCenter`) và căn từ mép trái
   - Các phương thức `addChild()`, `removeChild()` và `updateContainerWidth()` để quản lý node con và cập nhật vị trí
+
+### Fixed
+- Lỗi EFX2001 trong `master.effect` shader: "can not resolve 'lighting-custom'"
+  - Tạo module `lighting-custom` với các hàm `SetLighting()` và `SetSpecular()`
+  - Cập nhật đường dẫn include trong `master.effect`
+  - Sửa lỗi TypeError liên quan đến đường dẫn file undefined
+  - Shader hiện hoạt động bình thường với lighting và specular effects
 
 ### Changed
 - Cập nhật `Item.pick()` để kiểm tra trạng thái matching và ngăn người chơi nhặt item khi đang xử lý match

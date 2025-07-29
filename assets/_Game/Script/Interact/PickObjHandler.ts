@@ -1,4 +1,4 @@
-import { _decorator, Camera, Component, EventTouch, geometry, Input, input, log, Node, PhysicsSystem } from 'cc';
+import { _decorator, Camera, Component, EventTouch, geometry, Input, input, log, Material, MeshRenderer, Node, PhysicsSystem } from 'cc';
 import { Item } from '../Component/Object/Item';
 import { ShelfContainer } from '../Component/Shelf/ShelfContainer';
 const { ccclass, property } = _decorator;
@@ -8,9 +8,19 @@ export class PickObjHandler extends Component
 {
     @property( { type: Camera, group: 'Reference' } )
     private camera: Camera;
+    @property( { type: Material, group: 'Reference' } )
+    private outlineMaterial: Material;
+    @property( { type: Material, group: 'Reference' } )
+    private defaultMaterial: Material;
 
     private currentItem: Node = null;
 
+    public static instance: PickObjHandler;
+
+    onLoad ()
+    {
+        PickObjHandler.instance = this;
+    }
     start ()
     {
         input.on( Input.EventType.TOUCH_START, this.onTouchStart, this );
@@ -80,6 +90,7 @@ export class PickObjHandler extends Component
                                 this.currentItem = hitNode;
                                 log( 'Đã chọn object:', hitNode.name );
                                 interactableObj.pick();
+                                this.turnOnOutline( hitNode );
                             }
                         }
                         return;
@@ -89,11 +100,34 @@ export class PickObjHandler extends Component
         }
     }
 
+    turnOnOutline ( obj: Node ): void
+    {
+        if ( obj )
+        {
+            obj.getComponentsInChildren( MeshRenderer ).forEach( ( meshRenderer ) =>
+            {
+                meshRenderer.material = this.outlineMaterial;
+            } );
+        }
+    }
+
+    turnOffOutline ( obj: Node ): void
+    {
+        if ( obj )
+        {
+            obj.getComponentsInChildren( MeshRenderer ).forEach( ( meshRenderer ) =>
+            {
+                meshRenderer.material = this.defaultMaterial;
+            } );
+        }
+    }
+
     stopPick ( obj: Node ): void
     {
         if ( obj )
         {
             obj.getComponent( Item ).drop();
+            this.turnOffOutline( obj );
         }
     }
 }
