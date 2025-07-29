@@ -31,11 +31,11 @@ export class Item extends Component
     @property( { type: RigidBody } )
     public rb: RigidBody = null;
     @property( { type: Enum( ItemType ) } )
-    public itemType: ItemType = ItemType.Watermelon;
+    public itemType: ItemType = ItemType.Hamberger;
     //#endregion
     //#region Public fields
     public currentShelfIndexSlot: number = -1;
-    //public animationMoveDone: boolean = false;
+    public startScale: Vec3 = new Vec3( 1, 1, 1 );
     public sortPromise: Promise<void> | null = null;
     public animationPromise: Promise<void> | null = null;
     public bouncePromise: Promise<void> | null = null;
@@ -63,6 +63,7 @@ export class Item extends Component
     start ()
     {
         this.initStateMachine();
+        this.startScale = this.node.scale.clone();  
     }
 
     private initStateMachine ()

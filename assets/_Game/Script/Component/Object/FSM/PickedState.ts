@@ -8,7 +8,6 @@ import { IState } from './IState';
 export class PickedState implements IState
 {
     private readonly name: string = 'Picked';
-    private startScale: Vec3 = new Vec3( 1, 1, 1 );
     private newScale: Vec3 = new Vec3( 1, 1, 1 );
 
     constructor () { }
@@ -26,7 +25,7 @@ export class PickedState implements IState
        // console.log( `${ item.node.name } đã rời khỏi trạng thái Picked` );
         item.rb.linearFactor = new Vec3( 1, 1, 1 );
         tween( item.node )
-            .to( 0.15, { scale: new Vec3( this.startScale.x, this.startScale.y, this.startScale.z ) }, { easing: 'bounceOut' } )
+            .to( 0.15, { scale: new Vec3( item.startScale.x, item.startScale.y, item.startScale.z ) }, { easing: 'bounceOut' } )
             .start();
     }
 
@@ -42,8 +41,7 @@ export class PickedState implements IState
 
     tweenScale ( item: Item ): void
     {
-        this.startScale = item.node.scale.clone();
-        this.newScale = item.node.scale.clone();
+        this.newScale = item.startScale.clone();
         tween( item.node )
             .to( 0.15, { scale: new Vec3( this.newScale.x * 1.2, this.newScale.y * 1.2, this.newScale.z * 1.2 ) }, { easing: 'bounceOut' } )
             .start();
