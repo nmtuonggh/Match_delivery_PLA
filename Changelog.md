@@ -5,6 +5,14 @@ Tất cả thay đổi đáng chú ý sẽ được ghi lại trong file này.
 ## [Unreleased]
 
 ### Added
+- Shader `hehe_outline.effect` - bản sao cải tiến của `hehe.effect` với mesh-based outline
+  - Thêm pass outline mới sử dụng mesh geometry thay vì silhouette-edge
+  - Vertex shader `mesh-outline-vs` mở rộng vertices theo normal vector
+  - Fragment shader `mesh-outline-fs` với hiệu ứng fresnel cho outline
+  - Thuộc tính `outlineWidth` để điều chỉnh độ dày outline (0-0.1)
+  - Thuộc tính `outlineColor` để tùy chỉnh màu sắc outline
+  - Thuộc tính `depthBias` để tránh z-fighting
+  - Hỗ trợ cả opaque và transparent technique
 - Shader effect `outline` cho object 3D trong `effect.effect`
   - Hỗ trợ điều chỉnh màu sắc outline qua thuộc tính `outlineColor`
   - Hỗ trợ điều chỉnh độ dày outline qua thuộc tính `outlineWidth` (0.0 - 0.05)
