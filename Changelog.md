@@ -36,6 +36,11 @@ Tất cả thay đổi đáng chú ý sẽ được ghi lại trong file này.
   - Các phương thức `addChild()`, `removeChild()` và `updateContainerWidth()` để quản lý node con và cập nhật vị trí
 
 ### Fixed
+- Lỗi logic match liên tiếp trong `ShelfContainer.checkAndDestroyMatched`
+  - Sửa vấn đề chỉ match được 1 nhóm duy nhất khi có nhiều nhóm 3 item liên tiếp (ví dụ AAABBB)
+  - Refactor thành logic lặp để tiếp tục kiểm tra match sau mỗi lần destroy
+  - Thêm hàm `findAndDestroyNextMatch()` để tìm và xử lý từng nhóm match một cách tuần tự
+  - Đảm bảo tất cả nhóm match có thể được xử lý trong một lượt (AAABBB → match cả AAA và BBB)
 - Lỗi EFX2001 trong `master.effect` shader: "can not resolve 'lighting-custom'"
   - Tạo module `lighting-custom` với các hàm `SetLighting()` và `SetSpecular()`
   - Cập nhật đường dẫn include trong `master.effect`

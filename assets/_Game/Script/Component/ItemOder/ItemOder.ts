@@ -1,4 +1,4 @@
-import { _decorator, Component, Enum, Label, Node, Sprite, tween } from 'cc';
+import { _decorator, Component, Enum, Label, Node, Sprite, tween, Vec3 } from 'cc';
 import { ItemType } from '../Object/Item';
 const { ccclass, property } = _decorator;
 
@@ -18,7 +18,9 @@ export class ItemOder extends Component
 
     public currentPickedCount: number = 0;
     public isCompleted: boolean = false;
+
     private _completedCount: number = 0;
+    private startScale: Vec3 = null;
 
     public get completedCount (): number
     {
@@ -38,6 +40,7 @@ export class ItemOder extends Component
     protected start (): void
     {
         this.updateUI();
+        this.startScale = this.node.scale.clone();
     }
 
     public updateUI (): void
@@ -52,21 +55,19 @@ export class ItemOder extends Component
         this.oderCountLabel.string = ( this.oderCount - this.currentPickedCount ).toString();
 
         //tween fill
-        let startFill = this.checkNode.fillRange;
         let newFill = this.currentPickedCount / this.oderCount;
         tween( this.checkNode )
             .to( 0.15, { fillRange: newFill }, { easing: 'smooth' } )
             .start();
 
         //tween scale
-        let startScale = this.node.scale.clone();
-        let newScale = startScale.clone();
+        let newScale = this.startScale.clone();
         newScale.x *= 1.15;
         newScale.y *= 1.15;
         newScale.z *= 1.15;
         tween( this.node )
             .to( 0.15, { scale: newScale }, { easing: 'smooth' } )
-            .to( 0.15, { scale: startScale }, { easing: 'smooth' } )
+            .to( 0.15, { scale: this.startScale }, { easing: 'smooth' } )
             .start();
     }
 

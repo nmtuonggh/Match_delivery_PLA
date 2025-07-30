@@ -26,12 +26,12 @@ export class ShelfContainer extends Component
     //#endregion
 
     static instance: ShelfContainer = null;
-    public isMatching: boolean = false;
     public canCheckMatch: boolean = true;
 
     //#region Private fields
     private currentItemCount: number = 0;
     private listPickedItem: Item[] = [];
+    private listShelfRenderStartPos: Vec3[] = [];
     //#endregion
 
     //#region CC Methods
@@ -45,6 +45,7 @@ export class ShelfContainer extends Component
             {
                 this.listShelfSlots.push( slots[ i ] );
             }
+            this.listShelfRenderStartPos.push( this.listShelfRender[ i ].worldPosition.clone() );
         }
     }
     //#endregion
@@ -69,6 +70,7 @@ export class ShelfContainer extends Component
             }
             result.canMatched = this.isSameItemType( item, this.listShelfSlots[ i - 1 ] );
             result.index = i;
+            console.log(result.canMatched);
             break;
         }
 
@@ -112,6 +114,7 @@ export class ShelfContainer extends Component
                 Promise.all( this.listAnimationPromise ).then( () =>
                 {
                     this.checkAndDestroyMatched( checkMatchedIndex );
+                    
                 } );
             }
             else if ( this.isFullSlot() )
@@ -135,7 +138,7 @@ export class ShelfContainer extends Component
         {
             return false;
         }
-        return item.itemType === this.listPickedItem[ index ].itemType;
+        return item.itemType === this.listPickedItem[ index ].itemType && !this.listPickedItem[ index ].isMatching;
     }
     //#endregion
     //#region SortItemOnShelf
@@ -143,7 +146,6 @@ export class ShelfContainer extends Component
     {
         for ( let i = this.currentItemCount - 1; i >= 0; i-- )
         {
-            console.log( this.listPickedItem );
             let item = this.listPickedItem[ i ];
             //await new Promise( resolve => setTimeout( resolve, VariableConfig.SORT_TIME * 0.5 ) );
             item.sortItem( i );
@@ -153,7 +155,6 @@ export class ShelfContainer extends Component
     //#region SortItemAfterMatch
     private async sortItemAfterMatch (): Promise<void>
     {
-        console.log( this.listPickedItem.length );
         for ( let i = 0; i < this.currentItemCount; i++ )
         {
             let item = this.listPickedItem[ i ];
@@ -166,39 +167,70 @@ export class ShelfContainer extends Component
     //#region CheckAndDestroyMatched
     private async checkAndDestroyMatched ( itemIndex: number ): Promise<void>
     {
-        if ( itemIndex < 0 || itemIndex >= this.listPickedItem.length || this.listPickedItem.length < 3 )
+        if ( this.listPickedItem.length < 3 )
         {
             return;
         }
-        this.isMatching = true;
-
-        const currentItemType = this.listPickedItem[ itemIndex ].itemType;
-
-        if ( itemIndex >= 2 &&
-            this.listPickedItem[ itemIndex - 1 ]?.itemType === currentItemType &&
-            this.listPickedItem[ itemIndex - 2 ]?.itemType === currentItemType )
+        // Tiếp tục kiểm tra và match cho đến khi không còn nhóm nào có thể match
+        let hasMatched = false;
+        do
         {
-            const itemsToDestroy = [
-                this.listPickedItem[ itemIndex - 2 ],
-                this.listPickedItem[ itemIndex - 1 ],
-                this.listPickedItem[ itemIndex ]
-            ];
+            hasMatched = await this.findAndDestroyNextMatch();
+        } while ( hasMatched && this.listPickedItem.length >= 3 );
+    }
+    //#endregion
 
-            this.listPickedItem.splice( itemIndex - 2, 3 );
-            this.currentItemCount -= 3;
+    //#region FindAndDestroyNextMatch
+    /**
+     * Tìm và xử lý nhóm match đầu tiên trong mảng
+     * @returns true nếu tìm thấy và xử lý được 1 nhóm match, false nếu không
+     */
+    private async findAndDestroyNextMatch (): Promise<boolean>
+    {
+        // Duyệt từ cuối mảng lên đầu để tìm nhóm 3 item liên tiếp cùng loại
+        for ( let i = this.listPickedItem.length - 3; i >= 0; i-- )
+        {
+            const currentItem = this.listPickedItem[ i ];
+            const nextItem1 = this.listPickedItem[ i + 1 ];
+            const nextItem2 = this.listPickedItem[ i + 2 ];
 
-            itemsToDestroy.forEach( item =>
+            // Bỏ qua nếu bất kỳ item nào đã được đánh dấu isMatching
+            if ( currentItem?.isMatching || nextItem1?.isMatching || nextItem2?.isMatching )
             {
-                Tween.stopAllByTarget(item.node);
-            } );
-            //stop all tween cho các slot tương ứng với 3 item cần destroy
+                continue;
+            }
 
-            await this.destroyMatchedItems( itemsToDestroy );
+            const currentItemType = currentItem.itemType;
 
-            await this.sortItemAfterMatch();
+            // Kiểm tra 3 item liên tiếp có cùng loại không
+            if ( nextItem1?.itemType === currentItemType &&
+                nextItem2?.itemType === currentItemType )
+            {
+                const itemsToDestroy = [ currentItem, nextItem1, nextItem2 ];
+
+                // Đánh dấu các item đang trong quá trình match NGAY LẬP TỨC
+                itemsToDestroy.forEach( item =>
+                {
+                    item.isMatching = true;
+                } );
+
+                // Dừng tất cả tween của các item cần destroy
+                itemsToDestroy.forEach( item =>
+                {
+                    Tween.stopAllByTarget( item.node );
+                } );
+
+                // Xử lý animation destroy và xóa khỏi mảng
+                await this.destroyMatchedItems( itemsToDestroy, i + 2 );
+
+                // Sắp xếp lại các item sau khi match
+                await this.sortItemAfterMatch();
+
+                return true; 
+            }
         }
 
-        this.isMatching = false;
+        return false; 
     }
     //#endregion
     //#region DestroyMatchedItems
@@ -206,7 +238,7 @@ export class ShelfContainer extends Component
      * Xử lý việc destroy các item đã match
      * @param items danh sách item cần destroy
      */
-    private async destroyMatchedItems ( items: Item[] ): Promise<void>
+    private async destroyMatchedItems ( items: Item[], itemIndex: number ): Promise<void>
     {
         if ( items.length !== 3 )
         {
@@ -284,25 +316,20 @@ export class ShelfContainer extends Component
             } );
         } );
 
+        this.listPickedItem.splice( itemIndex - 2, 3 );
+        this.currentItemCount -= 3;
         EventListener.emit( GameEvent.ItemMatched, items[ 0 ].itemType, 3 );
         AudioSystem.instance.playMatchObj();
         await Promise.all( disappearPromises );
     }
 
-    //#region IsInMatching
-    public isInMatching (): boolean
-    {
-        return this.isMatching;
-    }
-    //#endregion
-
     //#region Bounce
-    public async bounceSlotRender (boundcePower: number, index: number ): Promise<void>
+    public async bounceSlotRender ( boundcePower: number, index: number ): Promise<void>
     {
         let render = this.listShelfRender[ index ];
         let offsetBounce = boundcePower;
-        let startPos = render.worldPosition.clone();
-        let newPosition = new Vec3( startPos.x, startPos.y - offsetBounce, startPos.z );
+        let startPos = this.listShelfRenderStartPos[ index ];
+        let newPosition = new Vec3( startPos.clone().x, startPos.clone().y - offsetBounce, startPos.clone().z );
         if ( render )
         {
             tween( render )

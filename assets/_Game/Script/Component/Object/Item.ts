@@ -39,6 +39,8 @@ export class Item extends Component
     public sortPromise: Promise<void> | null = null;
     public animationPromise: Promise<void> | null = null;
     public bouncePromise: Promise<void> | null = null;
+    @property({readonly: true})
+    public isMatching: boolean = false;
 
     //#endregion
 
