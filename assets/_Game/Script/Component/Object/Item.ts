@@ -93,7 +93,7 @@ export class Item extends Component
     public pick (): boolean
     {
         // Nếu item không pickable hoặc đang trong quá trình match thì không cho pick
-        if ( !this._isPickable || ShelfContainer.instance.isInMatching() ) return false;
+        if ( !this._isPickable ) return false;
         AudioSystem.instance.playPickObj();
         return this.stateMachine.changeState( ItemStateType.PICKED );
     }

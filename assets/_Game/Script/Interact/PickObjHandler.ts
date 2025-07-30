@@ -45,7 +45,7 @@ export class PickObjHandler extends Component
     {
         // Xóa object hiện tại khi kết thúc chạm
         // this.stopPick(this.currentItem);
-        if ( this.currentItem && !ShelfContainer.instance.isMatching )
+        if ( this.currentItem )
         {
             this.currentItem.getComponent( Item ).moveToShelf();
         }
@@ -62,22 +62,18 @@ export class PickObjHandler extends Component
 
     private checkRaycastHit ( ray: geometry.Ray ): void
     {
-        // Thực hiện raycast kiểm tra va chạm
         if ( PhysicsSystem.instance )
         {
             const maxDistance = 100; // Khoảng cách tối đa cho raycast
             const mask = 0xffffffff; // Bật tất cả các layer 
 
-            // Sử dụng raycast query và kiểm tra kết quả
             if ( PhysicsSystem.instance.raycastClosest( ray, mask, maxDistance, false ) )
             {
                 const result = PhysicsSystem.instance.raycastClosestResult;
-
-                // Kiểm tra có kết quả nào không
                 if ( result )
                 {
-                    // Lấy hit gần nhất (kết quả đầu tiên)
                     const hitNode = result.collider.node;
+                    console.log( 'hitNode:', hitNode.name );
                     const interactableObj = hitNode.getComponent( Item );
 
                     if ( interactableObj )
@@ -94,6 +90,10 @@ export class PickObjHandler extends Component
                             }
                         }
                         return;
+                    }
+                    else
+                    {
+                        console.log( 'Không tìm thấy component Item' );
                     }
                 }
             }

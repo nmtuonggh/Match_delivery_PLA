@@ -1,4 +1,4 @@
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, EPhysicsDrawFlags, Node, PhysicsSystem } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass( 'GameController' )
@@ -16,6 +16,13 @@ export class GameController extends Component
 
     isWin: boolean = false;
 
+    protected onLoad (): void
+    {
+    //     PhysicsSystem.instance.debugDrawFlags =
+    //     // EPhysicsDrawFlags.WIRE_FRAME
+    // //EPhysicsDrawFlags.AABB
+    // // | EPhysicsDrawFlags.CONSTRAINT;
+    }
     start ()
     {
         GameController.instance = this;
