@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Vec3, Button, Prefab } from 'cc';
+import { _decorator, Component, Node, Vec3, Button, Prefab, randomRange } from 'cc';
 import { ObjectFactory } from './ObjectFactory';
 import { ObjectType } from './ObjectType';
 
@@ -97,7 +97,7 @@ export class ObjectSpawnerDemo extends Component
         }
     }
 
-    init()
+    init ()
     {
         ObjectFactory.instance.initialize( this.objectContainer );
 
@@ -139,7 +139,7 @@ export class ObjectSpawnerDemo extends Component
             oldChilds[ i ].destroy();
         }
 
-        this.onSpawnAllObj();
+        this.onspawnSingleObj();
     }
 
     async onSpawnAllObj ()
@@ -162,6 +162,48 @@ export class ObjectSpawnerDemo extends Component
             }
         }
     }
+
+    async onspawnSingleObj ()
+    {
+        this.init();
+
+        if ( this.indexObj.length !== this.spawnCount.length )
+        {
+            console.error( 'Số lượng indexObj và spawnCount không khớp!' );
+            return;
+        }
+
+        // Duyệt qua từng cặp indexObj và spawnCount
+        for ( let i = 0; i < this.indexObj.length; i++ )
+        {
+            const index = this.indexObj[ i ];
+            const count = this.spawnCount[ i ];
+
+            // Kiểm tra index hợp lệ
+            if ( index < 0 || index >= this.prefabsToSpawn.length )
+            {
+                console.error( `Index không hợp lệ: ${ index }` );
+                continue;
+            }
+
+            // Lấy prefab info tương ứng
+            const prefabInfo = this.prefabsToSpawn[ index ];
+
+            // Spawn đối tượng với số lượng cấu hình
+            for ( let j = 0; j < count; j++ )
+            {
+                let position = this.getRandomPosition();
+                const obj = await ObjectFactory.instance.spawn( prefabInfo.type, position );
+
+                if ( obj )
+                {
+                    console.log( `Đã spawn ${ prefabInfo.type } tại`, position );
+                    this.spawnedObjects.get( prefabInfo.type.toString() ).push( obj );
+                }
+            }
+        }
+    }
+
 
     onDestroy ()
     {
@@ -304,7 +346,7 @@ export class ObjectSpawnerDemo extends Component
     private getRandomPosition (): Vec3
     {
         const x = ( Math.random() - 0.5 ) * 10;
-        const y = 6;
+        const y = randomRange( 2, 8 );
         const z = ( Math.random() - 0.5 ) * 10;
         return new Vec3( x, y, z );
     }

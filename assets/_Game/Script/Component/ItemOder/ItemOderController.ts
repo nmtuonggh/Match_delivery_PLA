@@ -13,11 +13,6 @@ export class ItemOderController extends Component
     itemOderNode: Node = null;
     @property( [ ItemOder ] )
     public listItemOders: ItemOder[] = [];
-
-    // Map để lưu trữ số lượng cần thiết cho mỗi loại item
-    private requiredItemsMap = new Map<ItemType, number>();
-    // Map để theo dõi số lượng đã hoàn thành
-    private completedItemsMap = new Map<ItemType, number>();
     // Singleton instance
     public static instance: ItemOderController = null;
 
@@ -53,9 +48,10 @@ export class ItemOderController extends Component
     init (): void
     {
         this.listItemOders = this.itemOderNode.getComponentsInChildren( ItemOder );
-        this.initRequiredItemsMap();
-        this.resetCompletedItemsMap();
-        this.updateItemOderUI();
+        // Khởi tạo giá trị completedCount cho mỗi ItemOder
+        for (const itemOder of this.listItemOders) {
+            itemOder.completedCount = 0;
+        }
     }
 
     animInit (): void
@@ -93,94 +89,24 @@ export class ItemOderController extends Component
         }
     }
 
-    // Khởi tạo map lưu trữ số lượng item cần thiết từ danh sách ItemOder
-    private initRequiredItemsMap (): void
-    {
-        this.requiredItemsMap.clear();
-
-        for ( const itemOder of this.listItemOders )
-        {
-            const itemType = itemOder.itemType;
-            const count = itemOder.oderCount;
-
-            this.requiredItemsMap.set( itemType, count );
-
-            // Đảm bảo rằng node checkDone ban đầu bị ẩn
-            itemOder.checkNode.active = false;
-        }
-    }
-
-    // Reset map theo dõi số lượng đã hoàn thành
-    private resetCompletedItemsMap (): void
-    {
-        this.completedItemsMap.clear();
-
-        // Khởi tạo tất cả các giá trị là 0
-        for ( const [ itemType, _ ] of this.requiredItemsMap )
-        {
-            this.completedItemsMap.set( itemType, 0 );
-        }
-    }
-
     // Xử lý khi nhận được sự kiện item đã match
     private onItemMatched ( itemType: ItemType, count: number ): void
     {
-        // Kiểm tra xem loại item này có trong danh sách yêu cầu không
-        if ( this.requiredItemsMap.has( itemType ) )
-        {
-            const requiredCount = this.requiredItemsMap.get( itemType );
-            let completedCount = this.completedItemsMap.get( itemType ) || 0;
-
-            // Cộng thêm số lượng item đã match
-            completedCount += count;
-
-            // Cập nhật lại giá trị trong map
-            this.completedItemsMap.set( itemType, completedCount );
-
-            // Kiểm tra xem đã hoàn thành đủ số lượng chưa
-            if ( completedCount >= requiredCount )
-            {
-                this.markItemOrderComplete( itemType );
-            }
-
-            // Cập nhật UI
-            this.updateItemOderUI();
-        }
-    }
-
-    // Đánh dấu một ItemOder đã hoàn thành
-    private markItemOrderComplete ( itemType: ItemType ): void
-    {
-        for ( const itemOder of this.listItemOders )
-        {
-            if ( itemOder.itemType === itemType )
-            {
-                itemOder.isCompleted = true;
-                this.scheduleOnce( () =>
-                {
-                    tween( itemOder.node )
-                        .to( 0.15, { scale: new Vec3( 0, 0, 0 ) }, { easing: 'smooth' } )
-                        .start();
-                }, 0.1 );
+        for (const itemOder of this.listItemOders) {
+            // Chỉ xử lý nếu item type phù hợp
+            if (itemOder.itemType === itemType) {
+                // Sử dụng phương thức onItemMatched của ItemOder
+                // Nếu vừa hoàn thành yêu cầu, tạo hiệu ứng thu nhỏ
+                if (itemOder.onItemMatched(count)) {
+                    this.scheduleOnce(() => {
+                        tween(itemOder.node)
+                            .to(0.15, { scale: new Vec3(0, 0, 0) }, { easing: 'smooth' })
+                            .start();
+                    }, 0.1);
+                }
             }
         }
     }
-
-    // Cập nhật UI của tất cả các ItemOder
-    private updateItemOderUI (): void
-    {
-        for ( const itemOder of this.listItemOders )
-        {
-            const itemType = itemOder.itemType;
-            const requiredCount = itemOder.oderCount;
-            const completedCount = this.completedItemsMap.get( itemType ) || 0;
-
-            // Cập nhật label hiển thị số lượng còn lại
-            const remainingCount = Math.max( 0, requiredCount - completedCount );
-            itemOder.oderCountLabel.string = remainingCount.toString();
-        }
-    }
-
 
     private onItemOnShelf ( itemType: ItemType ): void
     {

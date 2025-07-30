@@ -2,18 +2,34 @@
   "ver": "2.3.13",
   "importer": "fbx",
   "imported": true,
-  "uuid": "61e9ea16-5575-4739-92c1-60c587acd952",
+  "uuid": "47dea09a-ea1a-432e-8003-c719e3dce67f",
   "files": [],
   "subMetas": {
-    "4564e": {
-      "importer": "gltf-mesh",
-      "uuid": "61e9ea16-5575-4739-92c1-60c587acd952@4564e",
+    "25117": {
+      "importer": "gltf-scene",
+      "uuid": "47dea09a-ea1a-432e-8003-c719e3dce67f@25117",
       "displayName": "",
-      "id": "4564e",
-      "name": "Basket_01.mesh",
+      "id": "25117",
+      "name": "WaterMelon.prefab",
+      "userData": {
+        "gltfIndex": 0
+      },
+      "ver": "1.0.14",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "dc286": {
+      "importer": "gltf-mesh",
+      "uuid": "47dea09a-ea1a-432e-8003-c719e3dce67f@dc286",
+      "displayName": "",
+      "id": "dc286",
+      "name": "WaterMelon_Full.002.mesh",
       "userData": {
         "gltfIndex": 0,
-        "triangleCount": 400
+        "triangleCount": 532
       },
       "ver": "1.1.1",
       "imported": true,
@@ -23,12 +39,12 @@
       ],
       "subMetas": {}
     },
-    "9e76b": {
-      "importer": "gltf-scene",
-      "uuid": "61e9ea16-5575-4739-92c1-60c587acd952@9e76b",
+    "9d499": {
+      "importer": "gltf-material",
+      "uuid": "47dea09a-ea1a-432e-8003-c719e3dce67f@9d499",
       "displayName": "",
-      "id": "9e76b",
-      "name": "Basket_01.prefab",
+      "id": "9d499",
+      "name": "UnlitColor.002.material",
       "userData": {
         "gltfIndex": 0
       },
@@ -65,13 +81,15 @@
     },
     "assetFinder": {
       "meshes": [
-        "61e9ea16-5575-4739-92c1-60c587acd952@4564e"
+        "47dea09a-ea1a-432e-8003-c719e3dce67f@dc286"
       ],
       "skeletons": [],
       "textures": [],
-      "materials": [],
+      "materials": [
+        "47dea09a-ea1a-432e-8003-c719e3dce67f@9d499"
+      ],
       "scenes": [
-        "61e9ea16-5575-4739-92c1-60c587acd952@9e76b"
+        "47dea09a-ea1a-432e-8003-c719e3dce67f@25117"
       ]
     }
   }

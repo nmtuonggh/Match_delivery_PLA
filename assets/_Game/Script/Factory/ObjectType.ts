@@ -3,4 +3,7 @@ export enum ObjectType {
     Hamberger = 'Hamberger',
     IceCreamCubBlue = 'IceCreamCubBlue',
     Donut_Pink = 'Donut_Pink', 
+    StrongBerry = 'StrongBerry',
+    Watermelon = 'Watermelon',
+    Lemon = 'Lemon',
 }

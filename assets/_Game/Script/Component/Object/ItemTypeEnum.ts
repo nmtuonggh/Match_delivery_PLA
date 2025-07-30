@@ -7,6 +7,12 @@ export enum ItemType
     Hamberger = 'Hamberger',
     IceCreamCubBlue = 'IceCreamCubBlue',
     Donut_Pink = 'Donut_Pink', 
+
+    //Fruits
+    StrongBerry = 'StrongBerry',
+    Watermelon = 'Watermelon',
+    Lemon = 'Lemon',
+    
 }
 
 
