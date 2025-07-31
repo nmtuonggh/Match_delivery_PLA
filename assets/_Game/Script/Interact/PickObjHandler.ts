@@ -14,6 +14,7 @@ export class PickObjHandler extends Component
     private defaultMaterial: Material;
 
     private currentItem: Node = null;
+    private lastRaycastItem: Node = null; // Item cuối cùng được raycast kiểm tra
 
     public static instance: PickObjHandler;
 
@@ -21,6 +22,7 @@ export class PickObjHandler extends Component
     {
         PickObjHandler.instance = this;
     }
+    
     start ()
     {
         input.on( Input.EventType.TOUCH_START, this.onTouchStart, this );
@@ -50,7 +52,6 @@ export class PickObjHandler extends Component
             this.currentItem.getComponent( Item ).moveToShelf();
         }
         this.currentItem = null;
-
     }
 
     private createRay ( event: EventTouch ): geometry.Ray
@@ -96,6 +97,14 @@ export class PickObjHandler extends Component
                         console.log( 'Không tìm thấy component Item' );
                     }
                 }
+                else
+                {
+                    this.stopPick(this.currentItem);
+                }
+            }
+            else
+            {
+                this.stopPick(this.currentItem);
             }
         }
     }
@@ -128,6 +137,7 @@ export class PickObjHandler extends Component
         {
             obj.getComponent( Item ).drop();
             this.turnOffOutline( obj );
+            this.currentItem = null;
         }
     }
 }
