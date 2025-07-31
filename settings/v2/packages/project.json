@@ -38,6 +38,10 @@
     {
       "name": "Wall",
       "value": 2
+    },
+    {
+      "name": "Particle",
+      "value": 4
     }
   ]
 }

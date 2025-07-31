@@ -5,6 +5,17 @@ Tất cả thay đổi đáng chú ý sẽ được ghi lại trong file này.
 ## [Unreleased]
 
 ### Added
+- `ParticleSpawnManager` - Hệ thống quản lý spawn particle 2D và 3D
+  - Hỗ trợ spawn particle 2D với chuyển đổi world position sang UI position
+  - Hỗ trợ spawn particle 3D tại vị trí world position
+  - Object pooling được tối ưu với pre-initialized pools (20 nodes mỗi loại)
+  - Singleton pattern để dễ dàng truy cập từ bất kỳ đâu
+  - Tự động destroy particle sau thời gian xác định
+  - Hỗ trợ spawn với prefab index hoặc prefab trực tiếp
+  - Phương thức `clearAllActiveParticles()` để dọn dẹp tất cả particle
+  - Validation đầy đủ cho tham số đầu vào và error handling
+  - Thống kê pool với `getPoolStats()` và `logPoolStats()`
+  - Điều chỉnh kích thước pool động với `adjustPoolSize()`
 - Shader `hehe_outline.effect` - bản sao cải tiến của `hehe.effect` với mesh-based outline
   - Thêm pass outline mới sử dụng mesh geometry thay vì silhouette-edge
   - Vertex shader `mesh-outline-vs` mở rộng vertices theo normal vector

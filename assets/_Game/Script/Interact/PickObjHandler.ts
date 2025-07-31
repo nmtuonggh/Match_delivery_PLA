@@ -1,6 +1,7 @@
-import { _decorator, Camera, Component, EventTouch, geometry, Input, input, log, Material, MeshRenderer, Node, PhysicsSystem } from 'cc';
-import { Item } from '../Component/Object/Item';
+import { _decorator, Camera, Color, Component, EventTouch, geometry, Input, input, log, Material, MeshRenderer, Node, PhysicsSystem, Vec3 } from 'cc';
+import { Item, ItemType } from '../Component/Object/Item';
 import { ShelfContainer } from '../Component/Shelf/ShelfContainer';
+import { ParticleSpawnManager } from '../Manager/ParticleSpawnManager';
 const { ccclass, property } = _decorator;
 
 @ccclass( 'PickObjHandler' )
@@ -22,7 +23,7 @@ export class PickObjHandler extends Component
     {
         PickObjHandler.instance = this;
     }
-    
+
     start ()
     {
         input.on( Input.EventType.TOUCH_START, this.onTouchStart, this );
@@ -49,6 +50,7 @@ export class PickObjHandler extends Component
         // this.stopPick(this.currentItem);
         if ( this.currentItem )
         {
+            this.spawnPickParticle( this.currentItem );
             this.currentItem.getComponent( Item ).moveToShelf();
         }
         this.currentItem = null;
@@ -74,7 +76,7 @@ export class PickObjHandler extends Component
                 if ( result )
                 {
                     const hitNode = result.collider.node;
-                    
+
                     const interactableObj = hitNode.getComponent( Item );
 
                     if ( interactableObj )
@@ -99,12 +101,12 @@ export class PickObjHandler extends Component
                 }
                 else
                 {
-                    this.stopPick(this.currentItem);
+                    this.stopPick( this.currentItem );
                 }
             }
             else
             {
-                this.stopPick(this.currentItem);
+                this.stopPick( this.currentItem );
             }
         }
     }
@@ -139,6 +141,24 @@ export class PickObjHandler extends Component
             this.turnOffOutline( obj );
             this.currentItem = null;
         }
+    }
+
+    spawnPickParticle ( currentItem: Node ): void
+    {
+        let index = 0;
+        switch ( currentItem.getComponent( Item ).itemType )
+        {
+            case ItemType.Lemon:
+                index = 0;
+                break;
+            case ItemType.Watermelon:
+                index = 1;
+                break;
+            case ItemType.StrongBerry:
+                index = 2;
+                break;
+        }
+        ParticleSpawnManager.instance.spawn2DParticle( index, currentItem.worldPosition, 5 );
     }
 }
 

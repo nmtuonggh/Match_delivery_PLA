@@ -6,6 +6,7 @@ import { GameEvent } from '../../GameEvent/GameEvent';
 import { VariableConfig } from '../../Config/VariableConfig';
 import { GameController } from '../../Manager/GameController';
 import { AudioSystem } from '../../Audio/AudioSystem';
+import { ParticleSpawnManager } from '../../Manager/ParticleSpawnManager';
 const { ccclass, property } = _decorator;
 
 @ccclass( 'ShelfContainer' )
@@ -334,18 +335,20 @@ export class ShelfContainer extends Component
 
         await Promise.all( moveToMiddlePromises );
 
-        if ( this.matchEffect && this.Camera )
-        {
-            const effectNode = instantiate( this.matchEffect );
-            this.canvas.addChild( effectNode );
-            const uiPos = new Vec3();
-            this.Camera.convertToUINode( middlePos, this.canvas, uiPos );
-            effectNode.setPosition( uiPos );
-            this.scheduleOnce( () =>
-            {
-                effectNode.destroy();
-            }, 1.0 );
-        }
+        // if ( this.matchEffect && this.Camera )
+        // {
+        //     const effectNode = instantiate( this.matchEffect );
+        //     this.canvas.addChild( effectNode );
+        //     const uiPos = new Vec3();
+        //     this.Camera.convertToUINode( middlePos, this.canvas, uiPos );
+        //     effectNode.setPosition( uiPos );
+        //     this.scheduleOnce( () =>
+        //     {
+        //         effectNode.destroy();
+        //     }, 1.0 );
+        // }
+
+        ParticleSpawnManager.instance.spawn3DParticle( 0, middlePos );
 
         const disappearPromises = items.map( item =>
         {

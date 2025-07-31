@@ -1,4 +1,4 @@
-import { _decorator, Component, Enum, Label, Node, Sprite, tween, Vec3 } from 'cc';
+import { _decorator, Color, color, Component, Enum, Label, Node, Sprite, tween, Vec3 } from 'cc';
 import { ItemType } from '../Object/Item';
 const { ccclass, property } = _decorator;
 
@@ -15,27 +15,15 @@ export class ItemOder extends Component
     public oderCountLabel: Label;
     @property( Sprite )
     public checkNode: Sprite;
+    @property(Color)
+    public highLightColor: Color;
 
     public currentPickedCount: number = 0;
     public isCompleted: boolean = false;
 
-    private _completedCount: number = 0;
+    
     private startScale: Vec3 = null;
 
-    public get completedCount (): number
-    {
-        return this._completedCount;
-    }
-
-    public set completedCount ( value: number )
-    {
-        this._completedCount = value;
-        this.updateUI();
-        if ( this._completedCount >= this.oderCount )
-        {
-            this.isCompleted = true;
-        }
-    }
 
     protected start (): void
     {
@@ -45,12 +33,22 @@ export class ItemOder extends Component
 
     public updateUI (): void
     {
-        const remaining = Math.max( 0, this.oderCount - this._completedCount );
+        const remaining = Math.max( 0, this.oderCount - this.currentPickedCount );
         this.oderCountLabel.string = remaining.toString();
+    }
+
+    CheckComplete (): boolean
+    {
+        if ( this.currentPickedCount >= this.oderCount )
+        {
+            this.isCompleted = true;
+        }
+        return this.isCompleted;
     }
 
     public onItemOnShelf (): void
     {
+        if ( this.isCompleted ) return;
         this.currentPickedCount++;
         this.oderCountLabel.string = ( this.oderCount - this.currentPickedCount ).toString();
 
@@ -69,15 +67,14 @@ export class ItemOder extends Component
             .to( 0.15, { scale: newScale }, { easing: 'smooth' } )
             .to( 0.15, { scale: this.startScale }, { easing: 'smooth' } )
             .start();
+        
+        //tween color
+        let sprite = this.node.getComponent(Sprite);
+        tween(sprite)
+            .to(0.15, { color: this.highLightColor }, { easing: 'smooth' })
+            .to(0.15, { color: new Color(255, 255, 255, 255) }, { easing: 'smooth' })
+            .start();
     }
 
-    public onItemMatched ( count: number ): boolean
-    {
-        if ( this.isCompleted ) return false;
-
-        const oldCompletedCount = this._completedCount;
-        this.completedCount = this._completedCount + count;
-
-        return !this.isCompleted && oldCompletedCount < this.oderCount && this._completedCount >= this.oderCount;
-    }
+    
 }

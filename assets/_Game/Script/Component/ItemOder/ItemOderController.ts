@@ -47,11 +47,7 @@ export class ItemOderController extends Component
 
     init (): void
     {
-        this.listItemOders = this.itemOderNode.getComponentsInChildren( ItemOder );
-        // Khởi tạo giá trị completedCount cho mỗi ItemOder
-        for (const itemOder of this.listItemOders) {
-            itemOder.completedCount = 0;
-        }
+        this.listItemOders = this.itemOderNode.getComponentsInChildren( ItemOder );   
     }
 
     animInit (): void
@@ -97,7 +93,7 @@ export class ItemOderController extends Component
             if (itemOder.itemType === itemType) {
                 // Sử dụng phương thức onItemMatched của ItemOder
                 // Nếu vừa hoàn thành yêu cầu, tạo hiệu ứng thu nhỏ
-                if (itemOder.onItemMatched(count)) {
+                if (itemOder.CheckComplete()) {
                     this.scheduleOnce(() => {
                         tween(itemOder.node)
                             .to(0.15, { scale: new Vec3(0, 0, 0) }, { easing: 'smooth' })

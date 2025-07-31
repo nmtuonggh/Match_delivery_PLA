@@ -2,7 +2,6 @@ import { _decorator, Enum, Game, game, Input, input } from 'cc';
 import super_html_playable from './super_html_playable';
 import { SingletonInSceneComponent } from '../Pattern/SingletonInSceneComponent';
 import { TrackingManager } from './Tracking/TrackingManager';
-import { AudioSystem } from 'db://assets/scripts/Game/System/AudioSystem';
 
 const { ccclass, property } = _decorator;
 
@@ -14,7 +13,7 @@ export class PlayableAdsManager extends SingletonInSceneComponent
     static instanceID: string = "PlayableAdsManager";
     playableAdsName: string = "iKame";
 
-    readonly titleDefault: string = "Cocos Creator - screwcraze3d_pla";
+    readonly titleDefault: string = "Cocos Creator - MatchDelivery";
 
     network: string = "";
 
