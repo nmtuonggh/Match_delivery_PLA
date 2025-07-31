@@ -8,6 +8,8 @@ export class VariableConfig
     public static instance: VariableConfig = null;
     public static SORT_TIME: number = 0.1;
     public static ANIMATIONITEM_TIME: number = 0.2;
+    public static SORT_DELAY_LEFT: number = 85;
+    public static SORT_DELAY_RIGHT: number = 200;
 }
 
 

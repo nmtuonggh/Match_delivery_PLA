@@ -157,7 +157,7 @@ export class Item extends Component
                 } );
                 await this.sortPromise;
                 this.currentShelfIndexSlot = i;
-                await new Promise( resolve => setTimeout( resolve, 200 ) );
+                await new Promise( resolve => setTimeout( resolve, VariableConfig.SORT_DELAY_RIGHT ) );
             }
         } else
         {
@@ -187,7 +187,7 @@ export class Item extends Component
                 await this.sortPromise;
                 await this.bouncePromise;
                 this.currentShelfIndexSlot = i - 1;
-                await new Promise( resolve => setTimeout( resolve, 200 ) );
+                await new Promise( resolve => setTimeout( resolve, VariableConfig.SORT_DELAY_LEFT ) );
             }
         }
         //this.currentShelfIndexSlot = newIndexPos;

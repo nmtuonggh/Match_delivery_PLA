@@ -13,7 +13,7 @@ export class TrackingManager extends Component {
     
     static currentScreen : string = "_level_1";
     static returnGame : USER_RETURN = USER_RETURN._false;
-    static package_name : string = `com.ig.screwdom`;
+    static package_name : string = `com.ig.match.delivery`;
     static os : OPERATING_SYSTEM = OPERATING_SYSTEM.NONE;
     protected onLoad(): void {
         TrackingManager.userPseudoID = this.generateUniqueString();
