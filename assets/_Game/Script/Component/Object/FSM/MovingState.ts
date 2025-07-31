@@ -37,7 +37,7 @@ export class MovingState implements IState
 
         ShelfContainer.instance.onGetNewItem( item, item.currentShelfIndexSlot );
         //await
-        ShelfContainer.instance.checkSortItem( slotIndex.canMatched, item.currentShelfIndexSlot, item );
+        ShelfContainer.instance.checkSortItem( slotIndex.canMatched, item.currentShelfIndexSlot );
 
         this.animationMove( item, slot );
 

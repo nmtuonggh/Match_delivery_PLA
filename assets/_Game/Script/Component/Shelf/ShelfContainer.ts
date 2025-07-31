@@ -104,7 +104,7 @@ export class ShelfContainer extends Component
 
     public listAnimationPromise: Promise<void>[] = [];
     //#region CheckSortItem
-    public async checkSortItem ( canMatched: boolean, checkMatchedIndex: number, item: Item ): Promise<void>
+    public async checkSortItem ( canMatched: boolean, checkMatchedIndex: number ): Promise<void>
     {
         await this.sortItemOnShelf().then( async () =>
         {
@@ -117,7 +117,7 @@ export class ShelfContainer extends Component
                     
                 } );
             }
-            else if ( this.isFullSlot() )
+            else if ( this.isFullSlot() && !this.hasAnyPossibleMatch() )
             {
                 GameController.instance.onDisableInput();
                 this.scheduleOnce( () =>
@@ -144,23 +144,35 @@ export class ShelfContainer extends Component
     //#region SortItemOnShelf
     private async sortItemOnShelf (): Promise<void>
     {
+        // Tạo mảng promises để đợi tất cả animation sort hoàn thành
+        const sortPromises: Promise<void>[] = [];
+        
         for ( let i = this.currentItemCount - 1; i >= 0; i-- )
         {
             let item = this.listPickedItem[ i ];
-            //await new Promise( resolve => setTimeout( resolve, VariableConfig.SORT_TIME * 0.5 ) );
-            item.sortItem( i );
+            // Thêm promise vào mảng thay vì gọi trực tiếp
+            sortPromises.push( item.sortItem( i ) );
         }
+        
+        // Đợi tất cả animation sort hoàn thành trước khi return
+        await Promise.all( sortPromises );
     }
     //#endregion
     //#region SortItemAfterMatch
     private async sortItemAfterMatch (): Promise<void>
     {
+        // Tạo mảng promises để đợi tất cả animation sort hoàn thành
+        const sortPromises: Promise<void>[] = [];
+        
         for ( let i = 0; i < this.currentItemCount; i++ )
         {
             let item = this.listPickedItem[ i ];
-            item.sortItem( i );
-            await new Promise( resolve => setTimeout( resolve, 50 ) );
+            // Thêm promise vào mảng thay vì gọi trực tiếp
+            sortPromises.push( item.sortItem( i ) );
         }
+        
+        // Đợi tất cả animation sort hoàn thành trước khi return
+        await Promise.all( sortPromises );
     }
     //#endregion
 
@@ -231,6 +243,40 @@ export class ShelfContainer extends Component
         }
 
         return false; 
+    }
+    //#endregion
+
+    //#region HasAnyPossibleMatch
+    /**
+     * Kiểm tra xem có bất kỳ nhóm 3 item liên tiếp cùng loại nào có thể match được không
+     * @returns true nếu có ít nhất 1 nhóm có thể match, false nếu không
+     */
+    private hasAnyPossibleMatch(): boolean
+    {
+        // Kiểm tra từ cuối mảng lên đầu để tìm nhóm 3 item liên tiếp cùng loại
+        for ( let i = this.listPickedItem.length - 3; i >= 0; i-- )
+        {
+            const currentItem = this.listPickedItem[ i ];
+            const nextItem1 = this.listPickedItem[ i + 1 ];
+            const nextItem2 = this.listPickedItem[ i + 2 ];
+
+            // Bỏ qua nếu bất kỳ item nào đã được đánh dấu isMatching
+            if ( currentItem?.isMatching || nextItem1?.isMatching || nextItem2?.isMatching )
+            {
+                continue;
+            }
+
+            const currentItemType = currentItem.itemType;
+
+            // Kiểm tra 3 item liên tiếp có cùng loại không
+            if ( nextItem1?.itemType === currentItemType &&
+                nextItem2?.itemType === currentItemType )
+            {
+                return true; // Tìm thấy ít nhất 1 nhóm có thể match
+            }
+        }
+        
+        return false; // Không tìm thấy nhóm nào có thể match
     }
     //#endregion
     //#region DestroyMatchedItems

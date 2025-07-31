@@ -10,8 +10,12 @@
   },
   "_techIdx": 0,
   "_defines": [
-    {},
-    {}
+    {
+      "USE_INSTANCING": true
+    },
+    {
+      "USE_INSTANCING": true
+    }
   ],
   "_states": [
     {
@@ -37,9 +41,9 @@
     {
       "mainColor": {
         "__type__": "cc.Color",
-        "r": 245,
-        "g": 245,
-        "b": 245,
+        "r": 255,
+        "g": 255,
+        "b": 255,
         "a": 255
       },
       "mainTexture": {
@@ -52,7 +56,8 @@
         "y": 1.2,
         "z": 0.45,
         "w": 10.5
-      }
+      },
+      "transparent": 1
     },
     {}
   ]
