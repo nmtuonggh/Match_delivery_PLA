@@ -22,10 +22,10 @@ export class CollectHandler extends Component
         for ( let i = 0; i < shelfContainer.currentPickedTotalCount; i++ )
         {
             let obj = shelfContainer.listPickedItem[ i ];
-            if ( obj.canNotCollect ) continue;
+            if ( obj.canNotCollect() ) continue;
             if ( i >= shelfContainer.currentPickedTotalCount - 2 ) continue;
-            if ( shelfContainer.listPickedItem[ i + 1 ].canNotCollect ||
-                shelfContainer.listPickedItem[ i + 2 ].canNotCollect ) continue;
+            if ( shelfContainer.listPickedItem[ i + 1 ].canNotCollect() ||
+                shelfContainer.listPickedItem[ i + 2 ].canNotCollect() ) continue;
 
             item.isCollected = true;
             shelfContainer.listPickedItem[ i + 1 ].isCollected = true;
@@ -57,8 +57,8 @@ export class CollectHandler extends Component
         await this.delay( VariableConfig.COLLECT_TIME );
         //TODO : Sound Collect
 
-        matchItem0.node.active = false;
-        matchItem2.node.active = false;
+        // matchItem0.node.active = false;
+        // matchItem2.node.active = false;
         matchItem1.midCollected();
 
         //loai 3 item nay ra khoi , llloai theo object  

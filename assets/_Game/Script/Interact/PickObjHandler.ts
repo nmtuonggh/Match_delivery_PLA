@@ -69,7 +69,6 @@ export class PickObjHandler extends Component
         {
             const maxDistance = 100; // Khoảng cách tối đa cho raycast
             const mask = 1 << 2; // Bật tất cả các layer 
-
             if ( PhysicsSystem.instance.raycastClosest( ray, mask, maxDistance, false ) )
             {
                 const result = PhysicsSystem.instance.raycastClosestResult;
@@ -84,13 +83,13 @@ export class PickObjHandler extends Component
                         if ( this.currentItem !== hitNode )
                         {
                             this.stopPick( this.currentItem );
-                            if ( !ShelfContainer.instance.isFullSlot() )
-                            {
+                            console.log( 'checkRaycastHit' + ShelfContainer.instance.isFullSlot() );
+
+                            
                                 this.currentItem = hitNode;
-                                log( 'Đã chọn object:', hitNode.name );
                                 interactableObj.pick();
                                 this.turnOnOutline( hitNode );
-                            }
+                            
                         }
                         return;
                     }

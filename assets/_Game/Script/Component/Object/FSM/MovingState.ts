@@ -63,17 +63,22 @@ export class MovingState implements IState
         }
 
         //call Animation to move item to slot
-        this.pickupItem(item, pickupIndex, shelfContainer.pickupNum, 
-            shelfContainer.getSlotPos(pickupIndex), 
+        this.pickupItem( item, pickupIndex, shelfContainer.pickupNum,
+            shelfContainer.getSlotPos( pickupIndex ),
             GameFlowController.instance.onStartPickup,
-            GameFlowController.instance.onCompletePickup)
-            .then(() => {
+            GameFlowController.instance.onCompletePickup,
+            () =>
+            {
+                //TODO: Play effect pickup
+            } )
+            .then( () =>
+            {
                 //TODO: Nhun
-            });
-        shelfContainer.pickupNum ++;
+            } );
+        shelfContainer.pickupNum++;
         shelfContainer.sortItemOnShelf();
         //TODO: Warning
-        
+
     }
 
     public exit ( item: Item ): void
@@ -90,24 +95,24 @@ export class MovingState implements IState
         return this.name;
     }
 
-    public async pickupItem ( item : Item, pickupIndex: number, pickupNum: number, pickupPos: Vec3,
+    public async pickupItem ( item: Item, pickupIndex: number, pickupNum: number, pickupPos: Vec3,
         onStart?: ( item: Item ) => void,
         onComplete?: ( item: Item ) => void,
         onCompletePickup?: () => void ): Promise<void>
     {
-        item.PickupObj(pickupIndex, pickupNum);
+        item.PickupObj( pickupIndex, pickupNum );
         item.prePickupPos = item.node.getWorldPosition().clone();
         item.preRotation = item.node.getWorldRotation().clone();
         item.pickupIndex = pickupIndex;
         item.pickupPos = pickupPos;
 
-        Tween.stopAllByTarget(item.node);
-        onStart(item);
+        Tween.stopAllByTarget( item.node );
+        onStart( item );
 
         let shelfScale = new Vec3( 0.75, 0.75, 0.75 );
         tween( item.node )
-            .to( VariableConfig.PICKUP_TIME * 0.75, { scale: shelfScale }, { easing: 'bounceOut' } )
-            .to( VariableConfig.PICKUP_TIME * 0.25, { scale: item.startScale }, { easing: 'bounceOut' } )
+            .to( VariableConfig.PICKUP_TIME * 0.75, { scale: item.startScale.clone().multiplyScalar( 1.5 ) } )
+            .to( VariableConfig.PICKUP_TIME * 0.25, { scale: shelfScale } )
             .start()
 
         let startPos = item.node.getWorldPosition();
@@ -121,19 +126,21 @@ export class MovingState implements IState
         Vec3.scaleAndAdd( offset, offset, direction, -2 );
         let bezierPos = new Vec3();
         Vec3.add( bezierPos, midPoint, offset );
-        BezierTweenWorld( item.node, VariableConfig.PICKUP_TIME, startPos, bezierPos, endPos ).then(() => {
-            onComplete(item);
-        });
+        BezierTweenWorld( item.node, VariableConfig.PICKUP_TIME, startPos, bezierPos, endPos ).then( () =>
+        {
+            onCompletePickup?.();
+        } );
         //TODO : Rotate khi time tween nhay dc 1 nua
 
-        tween(item.node)
-            .to(VariableConfig.PICKUP_TIME * 0.5, { rotation: new Quat(0, 180, 0, 0) })
-            .call(() => {
+        tween( item.node )
+            .to( VariableConfig.PICKUP_TIME , { eulerAngles: new Vec3( 0, 180, 0 ) } )
+            .call( () =>
+            {
                 item.isFlying = false;
                 item.wasPicked = true;
                 item.node.worldPosition = item.pickupPos;
-                onComplete(item);
-            })
+                onComplete( item );
+            } )
             .start();
 
     }

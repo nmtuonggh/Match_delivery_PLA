@@ -55,7 +55,6 @@ export class Item extends Component
     public isDead: boolean = false;
     public isCollected: boolean = false;
     public wasPicked: boolean = false;
-    public canNotCollect: boolean = !this.wasPicked || this.isCollected || !this.isDead;
     public isMerging: boolean = false;
     //#endregion
     //#region Special fields
@@ -87,7 +86,7 @@ export class Item extends Component
     start ()
     {
         this.initStateMachine();
-        this.startScale = this.node.scale.clone();
+        this.startScale = new Vec3( 2, 2, 2 );
     }
 
     private initStateMachine ()
@@ -116,8 +115,6 @@ export class Item extends Component
 
     public pick (): boolean
     {
-        // Nếu item không pickable hoặc đang trong quá trình match thì không cho pick
-        if ( !this._isPickable ) return false;
         AudioSystem.instance.playPickObj();
         return this.stateMachine.changeState( ItemStateType.PICKED );
     }
@@ -152,7 +149,7 @@ export class Item extends Component
         if ( this.sortAnimationPromises )
         {
             // Stop tất cả animations hiện tại
-            Tween.stopAllByTarget(this.node);
+            Tween.stopAllByTarget( this.node );
             this.sortAnimationPromises = [];
             this.sortPromise = null;
         }
@@ -189,8 +186,8 @@ export class Item extends Component
                         this.pickupIndex = i1;
                         //TODO: Bounce
                     } );
-                
-                this.sortAnimationPromises.push(animationPromise);
+
+                this.sortAnimationPromises.push( animationPromise );
             }
         }
         else if ( newIndexPos > this.pickupIndex )
@@ -215,18 +212,18 @@ export class Item extends Component
                         this.pickupIndex = i1;
                         //TODO: Bounce
                     } );
-                
-                this.sortAnimationPromises.push(animationPromise);
+
+                this.sortAnimationPromises.push( animationPromise );
             }
         }
 
-        this.sortPromise = Promise.all(this.sortAnimationPromises).then(() => 
+        this.sortPromise = Promise.all( this.sortAnimationPromises ).then( () => 
         {
             this.pickupIndex = newIndexPos;
-            this.node.setWorldPosition(this.pickupPos);
+            this.node.setWorldPosition( this.pickupPos );
             this.sortAnimationPromises = [];
             this.sortPromise = null;
-        });
+        } );
     }
 
     public getSlotPosition ( index: number ): Vec3
@@ -261,16 +258,33 @@ export class Item extends Component
 
         Tween.stopAllByTarget( this.node );
         this.isMerging = true;
-        this.sortSequence.stop();
+        if ( this.sortSequence != null )
+        {
+            this.sortSequence.stop();
+            this.sortSequence = null;
+        }
         //Move the object up then move to the collection pos
         let upPos = new Vec3( this.node.worldPosition.x, pos.y + this.upCollectionOffset.y, this.node.worldPosition.z );
         let xPos = new Vec3( pos.x, pos.y + this.upCollectionOffset.y, pos.z )
         tween( this.node )
             .to( VariableConfig.COLLECT_TIME, { worldPosition: upPos }, { easing: 'sineOut' } )
+            .call( () => { this.node.active = false; } )
             .start();
         tween( this.node )
             .to( VariableConfig.COLLECT_TIME, { worldPosition: xPos }, { easing: 'backIn' } )
             .start();
+
+        // function backInWithOvershoot ( t: number, overshoot: number = 5 ): number
+        // {
+        //     const c1 = 1.70158 * overshoot; // Tăng overshoot
+        //     const c3 = c1 + 1;
+        //     return c3 * t * t * t - c1 * t * t;
+        // }
+        // tween( this.node )
+        //     .to( VariableConfig.COLLECT_TIME, { worldPosition: xPos }, {
+        //         easing: ( t: number ) => backInWithOvershoot( t, 5 )
+        //     } )
+        //     .start();
     }
     //#endregion
 
@@ -294,12 +308,17 @@ export class Item extends Component
         this.isFlying = true;
     }
     //#endregion
-    //#region 
+    //#region CanSort
     public canSort ( sortIndex: number ): boolean
     {
         return this.wasPicked && sortIndex != this.pickupIndex;
     }
     //#endregion
-
+    //#region CanNotCollect
+    public canNotCollect (): boolean
+    {
+        return !this.wasPicked || this.isCollected || !this.isDead;
+    }
+    //#endregion
 }
 export { ItemType };
