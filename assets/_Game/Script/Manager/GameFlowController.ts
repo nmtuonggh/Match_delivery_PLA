@@ -9,6 +9,8 @@ export class GameFlowController extends Component
 {
     @property( Node )
     public pickupItemParentNode: Node = null;
+    public count: number = 0;
+
 
     static instance: GameFlowController = null;
 
@@ -17,9 +19,11 @@ export class GameFlowController extends Component
         GameFlowController.instance = this;
     }
 
-    public onCompletePickup ( item: Item ): void
+    public onComplete ( item: Item ): void
     {
+        this.count += 1;
         CollectHandler.instance.UpdatePickUpItemDead( item );
+        console.log( 'count' + this.count );
         //TODO : Logic card oder
     }
 

@@ -64,13 +64,7 @@ export class MovingState implements IState
 
         //call Animation to move item to slot
         this.pickupItem( item, pickupIndex, shelfContainer.pickupNum,
-            shelfContainer.getSlotPos( pickupIndex ),
-            GameFlowController.instance.onStartPickup,
-            GameFlowController.instance.onCompletePickup,
-            () =>
-            {
-                //TODO: Play effect pickup
-            } )
+            shelfContainer.getSlotPos( pickupIndex ) )
             .then( () =>
             {
                 //TODO: Nhun
@@ -80,6 +74,7 @@ export class MovingState implements IState
         //TODO: Warning
 
     }
+
 
     public exit ( item: Item ): void
     {
@@ -95,10 +90,7 @@ export class MovingState implements IState
         return this.name;
     }
 
-    public async pickupItem ( item: Item, pickupIndex: number, pickupNum: number, pickupPos: Vec3,
-        onStart?: ( item: Item ) => void,
-        onComplete?: ( item: Item ) => void,
-        onCompletePickup?: () => void ): Promise<void>
+    public async pickupItem ( item: Item, pickupIndex: number, pickupNum: number, pickupPos: Vec3 ): Promise<void>
     {
         item.PickupObj( pickupIndex, pickupNum );
         item.prePickupPos = item.node.getWorldPosition().clone();
@@ -107,7 +99,7 @@ export class MovingState implements IState
         item.pickupPos = pickupPos;
 
         Tween.stopAllByTarget( item.node );
-        onStart( item );
+        GameFlowController.instance.onStartPickup( item );
 
         let shelfScale = new Vec3( 0.75, 0.75, 0.75 );
         tween( item.node )
@@ -128,18 +120,19 @@ export class MovingState implements IState
         Vec3.add( bezierPos, midPoint, offset );
         BezierTweenWorld( item.node, VariableConfig.PICKUP_TIME, startPos, bezierPos, endPos ).then( () =>
         {
-            onCompletePickup?.();
+            //TODO: EFFECT
         } );
         //TODO : Rotate khi time tween nhay dc 1 nua
 
         tween( item.node )
-            .to( VariableConfig.PICKUP_TIME , { eulerAngles: new Vec3( 0, 180, 0 ) } )
+            .to( VariableConfig.PICKUP_TIME, { eulerAngles: new Vec3( 0, 180, 0 ) } )
             .call( () =>
             {
                 item.isFlying = false;
                 item.wasPicked = true;
                 item.node.worldPosition = item.pickupPos;
-                onComplete( item );
+                ShelfContainer.instance.doneMoveCountCheck++;
+                GameFlowController.instance.onComplete( item );
             } )
             .start();
 

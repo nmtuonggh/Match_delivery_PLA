@@ -8,6 +8,10 @@ const { ccclass, property } = _decorator;
 export class CollectHandler extends Component
 {
     public static instance: CollectHandler = null;
+    
+    // Lock mechanism tương tự Unity's lock
+    private isLocked: boolean = false;
+    private lockQueue: (() => void)[] = [];
 
     public onLoad (): void
     {
@@ -15,10 +19,53 @@ export class CollectHandler extends Component
     }
     public UpdatePickUpItemDead ( item: Item ): void
     {
+        // Sử dụng lock tương tự Unity's lock (m_PickedUp)
+        this.ExecuteWithLock(() => {
+            this.UpdatePickUpItemDeadInternal(item);
+        });
+    }
+    
+    /**
+     * Execute function với lock mechanism
+     */
+    private ExecuteWithLock(action: () => void): void
+    {
+        if (this.isLocked) {
+            // Nếu đang lock, thêm vào queue
+            this.lockQueue.push(action);
+            return;
+        }
+        
+        // Acquire lock
+        this.isLocked = true;
+        
+        try {
+            // Execute action
+            action();
+        } finally {
+            // Release lock
+            this.isLocked = false;
+            
+            // Process next item in queue
+            if (this.lockQueue.length > 0) {
+                const nextAction = this.lockQueue.shift();
+                if (nextAction) {
+                    this.ExecuteWithLock(nextAction);
+                }
+            }
+        }
+    }
+    
+    /**
+     * Logic gốc của UpdatePickUpItemDead, giờ chạy trong lock
+     */
+    private UpdatePickUpItemDeadInternal(item: Item): void
+    {
         let shelfContainer = ShelfContainer.instance;
         shelfContainer.sortItemOnShelf();
 
         if ( !item.isDead ) return;
+
         for ( let i = 0; i < shelfContainer.currentPickedTotalCount; i++ )
         {
             let obj = shelfContainer.listPickedItem[ i ];
@@ -31,6 +78,7 @@ export class CollectHandler extends Component
             shelfContainer.listPickedItem[ i + 1 ].isCollected = true;
             shelfContainer.listPickedItem[ i + 2 ].isCollected = true;
             this.Collect( i + 1 );
+            
         }
     }
 

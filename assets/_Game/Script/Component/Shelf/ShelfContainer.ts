@@ -33,6 +33,8 @@ export class ShelfContainer extends Component
     public canCheckMatch: boolean = true;
     public currentPickedActiveCount: number = 0;
     public currentPickedTotalCount: number = 0;
+    public doneMoveCountCheck: number = 0;
+
 
     public listPickedItem: Item[] = [];
 
@@ -67,7 +69,6 @@ export class ShelfContainer extends Component
     //#region GetSlotAndCheckMatch
     public getSlotAndCheckMatch ( item: Item ): { index: number, canMatched: boolean }
     {
-        this.currentPickedActiveCount++;
         const result = { index: -1, canMatched: false };
 
         for ( let i = this.listShelfSlots.length - 1; i >= 0; i-- )

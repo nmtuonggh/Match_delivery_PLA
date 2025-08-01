@@ -83,13 +83,10 @@ export class PickObjHandler extends Component
                         if ( this.currentItem !== hitNode )
                         {
                             this.stopPick( this.currentItem );
-                            console.log( 'checkRaycastHit' + ShelfContainer.instance.isFullSlot() );
+                            this.currentItem = hitNode;
+                            interactableObj.pick();
+                            this.turnOnOutline( hitNode );
 
-                            
-                                this.currentItem = hitNode;
-                                interactableObj.pick();
-                                this.turnOnOutline( hitNode );
-                            
                         }
                         return;
                     }
