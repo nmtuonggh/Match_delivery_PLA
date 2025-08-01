@@ -14,15 +14,13 @@ export class PickedState implements IState
 
     public enter ( item: Item ): void
     {
-       // console.log( `${ item.node.name } đã vào trạng thái Picked` );
-
+        item.wasPicked = true;
         item.rb.linearFactor = new Vec3( 0, 1, 0 );
         this.tweenScale( item );
     }
 
     public exit ( item: Item ): void
     {
-       // console.log( `${ item.node.name } đã rời khỏi trạng thái Picked` );
         item.rb.linearFactor = new Vec3( 1, 1, 1 );
         tween( item.node )
             .to( 0.15, { scale: new Vec3( item.startScale.x, item.startScale.y, item.startScale.z ) }, { easing: 'bounceOut' } )

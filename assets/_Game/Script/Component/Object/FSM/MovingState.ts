@@ -1,4 +1,4 @@
-import { _decorator, Collider, Component, Node, tween, Vec3 } from 'cc';
+import { _decorator, Collider, Component, Node, Quat, Tween, tween, Vec3 } from 'cc';
 import { IState } from './IState';
 import { Item, ItemStateType } from '../Item';
 import { ShelfContainer } from '../../Shelf/ShelfContainer';
@@ -8,6 +8,7 @@ import { GameEvent } from '../../../GameEvent/GameEvent';
 import { ShelfSlot } from '../../Shelf/ShelfSlot';
 import { VariableConfig } from '../../../Config/VariableConfig';
 import { PickObjHandler } from '../../../Interact/PickObjHandler';
+import { GameFlowController } from '../../../Manager/GameFlowController';
 const { ccclass, property } = _decorator;
 
 @ccclass( 'MovingState' )
@@ -19,10 +20,10 @@ export class MovingState implements IState
 
     public enter ( item: Item ): void
     {
-        PickObjHandler.instance.turnOffOutline(item.node);
+        let shelfContainer = ShelfContainer.instance;
+        PickObjHandler.instance.turnOffOutline( item.node );
         //Physics
         item.rb.isKinematic = true;
-
         let listCollider = item.node.getComponents( Collider );
         listCollider.forEach( element =>
         {
@@ -30,19 +31,49 @@ export class MovingState implements IState
         } );
 
         //Logic
-        let slotIndex = ShelfContainer.instance.getSlotAndCheckMatch( item );
-        let index = slotIndex.index + 1;
-        let slot = ShelfContainer.instance.listShelfSlots[ index ];
-        item.currentShelfIndexSlot = index;
+        let slotIndexAndCheckMatch = shelfContainer.getSlotAndCheckMatch( item );
+        let resultIndex = slotIndexAndCheckMatch.index;
 
-        ShelfContainer.instance.onGetNewItem( item, item.currentShelfIndexSlot );
-        //await
-        ShelfContainer.instance.checkSortItem( slotIndex.canMatched, item.currentShelfIndexSlot );
+        if ( slotIndexAndCheckMatch.canMatched )
+        {
+            shelfContainer.currentPickedActiveCount -= 2;
+            item.isDead = true;
+            shelfContainer.listPickedItem[ resultIndex ].isDead = true;
+            shelfContainer.listPickedItem[ resultIndex - 1 ].isDead = true;
+            //TODO: CheckWin here
+        }
+        else
+        {
+            shelfContainer.currentPickedActiveCount++;
+            //TODO: CheckLose here
+        }
 
-        this.animationMove( item, slot );
+        // if exist on bar -> insert behind it, else just stick it to bottom
+        shelfContainer.currentPickedTotalCount += 1;
+        let pickupIndex = resultIndex + 1;
 
-        //Animation
+        if ( resultIndex === - 1 )
+        {
+            shelfContainer.listPickedItem.push( item );
+            pickupIndex = shelfContainer.currentPickedTotalCount - 1;
+        }
+        else
+        {
+            shelfContainer.listPickedItem.splice( pickupIndex, 0, item );
+        }
 
+        //call Animation to move item to slot
+        this.pickupItem(item, pickupIndex, shelfContainer.pickupNum, 
+            shelfContainer.getSlotPos(pickupIndex), 
+            GameFlowController.instance.onStartPickup,
+            GameFlowController.instance.onCompletePickup)
+            .then(() => {
+                //TODO: Nhun
+            });
+        shelfContainer.pickupNum ++;
+        shelfContainer.sortItemOnShelf();
+        //TODO: Warning
+        
     }
 
     public exit ( item: Item ): void
@@ -59,14 +90,28 @@ export class MovingState implements IState
         return this.name;
     }
 
-    public async animationMove ( item: Item, slot: ShelfSlot ): Promise<void>
+    public async pickupItem ( item : Item, pickupIndex: number, pickupNum: number, pickupPos: Vec3,
+        onStart?: ( item: Item ) => void,
+        onComplete?: ( item: Item ) => void,
+        onCompletePickup?: () => void ): Promise<void>
     {
+        item.PickupObj(pickupIndex, pickupNum);
+        item.prePickupPos = item.node.getWorldPosition().clone();
+        item.preRotation = item.node.getWorldRotation().clone();
+        item.pickupIndex = pickupIndex;
+        item.pickupPos = pickupPos;
+
+        Tween.stopAllByTarget(item.node);
+        onStart(item);
+
         let shelfScale = new Vec3( 0.75, 0.75, 0.75 );
         tween( item.node )
-            .to( VariableConfig.ANIMATIONITEM_TIME, { scale: shelfScale }, { easing: 'bounceOut' } )
+            .to( VariableConfig.PICKUP_TIME * 0.75, { scale: shelfScale }, { easing: 'bounceOut' } )
+            .to( VariableConfig.PICKUP_TIME * 0.25, { scale: item.startScale }, { easing: 'bounceOut' } )
             .start()
+
         let startPos = item.node.getWorldPosition();
-        let endPos = slot.node.getWorldPosition().clone();
+        let endPos = item.pickupPos.clone();
         let midPoint = new Vec3();
         Vec3.lerp( midPoint, startPos, endPos, 0.5 );
         let direction = new Vec3();
@@ -76,21 +121,20 @@ export class MovingState implements IState
         Vec3.scaleAndAdd( offset, offset, direction, -2 );
         let bezierPos = new Vec3();
         Vec3.add( bezierPos, midPoint, offset );
+        BezierTweenWorld( item.node, VariableConfig.PICKUP_TIME, startPos, bezierPos, endPos ).then(() => {
+            onComplete(item);
+        });
+        //TODO : Rotate khi time tween nhay dc 1 nua
 
-        item.animationPromise = BezierTweenWorld( item.node, VariableConfig.ANIMATIONITEM_TIME, startPos, bezierPos, endPos );
-        ShelfContainer.instance.listAnimationPromise.push( item.animationPromise );
-        item.animationPromise.then( () =>
-        {
-            //item.node.setParent(slot.node);
-            item.bounceItem(1);
-            ShelfContainer.instance.bounceSlotRender( 1, item.currentShelfIndexSlot );
-            // tween(item.node)
-            // .to(0.1, { worldPosition: slot.node.getWorldPosition().clone().add(new Vec3(0, -1, 0)) }, { easing: 'backInOut' })
-            // .to(0.1, { worldPosition: slot.node.getWorldPosition() }, { easing: 'backInOut' })
-            // .start();
-            item.onShelf();
-            ShelfContainer.instance.listAnimationPromise.splice( ShelfContainer.instance.listAnimationPromise.indexOf( item.animationPromise ), 1 );
-        } );
+        tween(item.node)
+            .to(VariableConfig.PICKUP_TIME * 0.5, { rotation: new Quat(0, 180, 0, 0) })
+            .call(() => {
+                item.isFlying = false;
+                item.wasPicked = true;
+                item.node.worldPosition = item.pickupPos;
+                onComplete(item);
+            })
+            .start();
 
     }
 }

@@ -15,15 +15,12 @@ export class OnShelfState implements IState
 
     public enter ( item: Item ): void
     {
-        //console.log( `${ item.node.name } đã vào trạng thái OnShelf` );
-        //reset góc
-        item.node.setRotationFromEuler( 20, 180, 0 );
+        // item.node.setRotationFromEuler( 20, 180, 0 );
         EventListener.emit( GameEvent.ItemOnShelf, item.itemType );
     }
 
     public exit ( item: Item ): void
     {
-        //console.log( `${ item.node.name } đã rời khỏi trạng thái OnShelf` );
     }
 
     public update ( item: Item, deltaTime: number ): void

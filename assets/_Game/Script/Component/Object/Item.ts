@@ -1,4 +1,4 @@
-import { _decorator, Component, Enum, Node, RigidBody, Tween, tween, Vec3 } from 'cc';
+import { _decorator, Component, Enum, Node, RigidBody, Tween, tween, Vec3, Quat } from 'cc';
 import { IdleState } from './FSM/IdleState';
 import { PickedState } from './FSM/PickedState';
 import { MovingState } from './FSM/MovingState';
@@ -33,13 +33,33 @@ export class Item extends Component
     @property( { type: Enum( ItemType ) } )
     public itemType: ItemType = ItemType.Hamberger;
     //#endregion
+
     //#region Public fields
     public currentShelfIndexSlot: number = -1;
     public startScale: Vec3 = new Vec3( 1, 1, 1 );
     public sortPromise: Promise<void> | null = null;
     public animationPromise: Promise<void> | null = null;
     public bouncePromise: Promise<void> | null = null;
-    @property({readonly: true})
+
+    public sortSequence: Tween<Node> | null = null;
+    public pickupIndex: number = 0;
+    public pickupNum: number = 0;
+    public pickupPos: Vec3 = new Vec3( 0, 0, 0 );
+    public isFlying: boolean = false;
+    public prePickupPos: Vec3 = new Vec3( 0, 0, 0 );
+    public preRotation: Quat = new Quat( 0, 0, 0, 0 );
+
+    //#endregion
+
+    //#region Flag Fields
+    public isDead: boolean = false;
+    public isCollected: boolean = false;
+    public wasPicked: boolean = false;
+    public canNotCollect: boolean = !this.wasPicked || this.isCollected || !this.isDead;
+    public isMerging: boolean = false;
+    //#endregion
+    //#region Special fields
+    @property( { readonly: true } )
     public isMatching: boolean = false;
 
     //#endregion
@@ -47,6 +67,8 @@ export class Item extends Component
     //#region Private fields
     private stateMachine: StateMachine;
     private _isPickable: boolean = true;
+    private upCollectionOffset: Vec3 = new Vec3( 0, 1, 0 );
+    private sortAnimationPromises: Promise<void>[] = [];
     //#endregion
 
     //#region Property
@@ -65,7 +87,7 @@ export class Item extends Component
     start ()
     {
         this.initStateMachine();
-        this.startScale = this.node.scale.clone();  
+        this.startScale = this.node.scale.clone();
     }
 
     private initStateMachine ()
@@ -119,78 +141,92 @@ export class Item extends Component
         return this.stateMachine.getCurrentStateName();
     }
 
-    public async sortItem ( newIndexPos: number ): Promise<void>
+    public sortItem ( newIndexPos: number ): void
     {
-        //window.item = this;
-        let currentIndex = this.currentShelfIndexSlot;
-        let delay = newIndexPos > currentIndex ? 0 : currentIndex * 0.001;
-        if ( delay > 0 )
+        if ( !this.canSort( newIndexPos ) ) return;
+        if ( this.isMerging ) return;
+        if ( this.sortSequence )
         {
-            await new Promise( resolve => setTimeout( resolve, delay * 500 ) );
+            this.sortSequence.stop();
         }
-
-        if ( newIndexPos > currentIndex )
+        if ( this.sortAnimationPromises )
         {
-            for ( let i = newIndexPos; i > currentIndex; i-- )
+            // Stop tất cả animations hiện tại
+            Tween.stopAllByTarget(this.node);
+            this.sortAnimationPromises = [];
+            this.sortPromise = null;
+        }
+        this.pickupPos = this.getSlotPosition( newIndexPos );
+        this.pickupIndex = newIndexPos;
+        Tween.stopAllByTarget( this.node );
+
+        //hopping to new pos
+        let currentIndex = this.pickupIndex;
+        let delay = newIndexPos > this.pickupIndex ? 0 : this.pickupIndex * 0.05;
+
+        // Tạo mảng để lưu tất cả các promises từ BezierTweenWorld
+        this.sortAnimationPromises = [];
+
+        if ( newIndexPos < this.pickupIndex )
+        {
+            for ( let i = currentIndex - 1; i >= newIndexPos; i-- )
             {
-                let targetSlotPos = this.getSlotPosition( i );
+                let i1 = i;
+                let targetPos = this.getSlotPosition( i );
                 let startPos = this.node.worldPosition;
-                let endPos = targetSlotPos;
                 let jumpHeight = 1;
 
-                const controlPoint = new Vec3(
-                    ( startPos.x + endPos.x ) / 2,
-                    Math.max( startPos.y, endPos.y ) + jumpHeight,
-                    ( startPos.z + endPos.z ) / 2
+                // Tạo control point cho jump effect (tương tự DOJump)
+                let controlPoint = new Vec3(
+                    ( startPos.x + targetPos.x ) / 2,
+                    Math.max( startPos.y, targetPos.y ) + jumpHeight,
+                    ( startPos.z + targetPos.z ) / 2
                 );
 
-                this.sortPromise = BezierTweenWorld(
-                    this.node,
-                    VariableConfig.SORT_TIME,
-                    startPos,
-                    controlPoint,
-                    endPos
-                ).then( () =>
-                {
-                   this.bounceItem( 0.5 );
-                   this.bouncePromise = ShelfContainer.instance.bounceSlotRender( 0.5, i );
-                } );
-                await this.sortPromise;
-                this.currentShelfIndexSlot = i;
-                await new Promise( resolve => setTimeout( resolve, VariableConfig.SORT_DELAY_RIGHT ) );
-            }
-        } else
-        {
-            for ( let i = currentIndex; i > newIndexPos; i-- )
-            {
-                let targetSlotPos = this.getSlotPosition( i - 1 );
-                let startPos = this.node.worldPosition;
-                let endPos = targetSlotPos;
-
-                const controlPoint = new Vec3(
-                    ( startPos.x + endPos.x ) / 2,
-                    Math.max( startPos.y, endPos.y ) + 1, // +1 là chiều cao nhảy, điều chỉnh phù hợp
-                    ( startPos.z + endPos.z ) / 2
-                );
-
-                this.sortPromise = BezierTweenWorld(
-                    this.node,
-                    VariableConfig.SORT_TIME, // Thời gian tương đương với InGameController.sortTime
-                    startPos,
-                    controlPoint,
-                    endPos
-                ).then( () =>
-                {
-                   this.bounceItem( 0.5 );
-                   this.bouncePromise = ShelfContainer.instance.bounceSlotRender( 0.5, i - 1 );
-                } );
-                await this.sortPromise;
-                await this.bouncePromise;
-                this.currentShelfIndexSlot = i - 1;
-                await new Promise( resolve => setTimeout( resolve, VariableConfig.SORT_DELAY_LEFT ) );
+                const animationPromise = BezierTweenWorld( this.node, VariableConfig.SORT_TIME, startPos, controlPoint, targetPos )
+                    .then( () =>
+                    {
+                        this.pickupIndex = i1;
+                        //TODO: Bounce
+                    } );
+                
+                this.sortAnimationPromises.push(animationPromise);
             }
         }
-        //this.currentShelfIndexSlot = newIndexPos;
+        else if ( newIndexPos > this.pickupIndex )
+        {
+            for ( let i = currentIndex + 1; i <= newIndexPos; i++ )
+            {
+                let i1 = i;
+                let targetPos = this.getSlotPosition( i );
+                let startPos = this.node.worldPosition;
+                let jumpHeight = 1;
+
+                // Tạo control point cho jump effect (tương tự DOJump)
+                let controlPoint = new Vec3(
+                    ( startPos.x + targetPos.x ) / 2,
+                    Math.max( startPos.y, targetPos.y ) + jumpHeight,
+                    ( startPos.z + targetPos.z ) / 2
+                );
+
+                const animationPromise = BezierTweenWorld( this.node, VariableConfig.SORT_TIME, startPos, controlPoint, targetPos )
+                    .then( () =>
+                    {
+                        this.pickupIndex = i1;
+                        //TODO: Bounce
+                    } );
+                
+                this.sortAnimationPromises.push(animationPromise);
+            }
+        }
+
+        this.sortPromise = Promise.all(this.sortAnimationPromises).then(() => 
+        {
+            this.pickupIndex = newIndexPos;
+            this.node.setWorldPosition(this.pickupPos);
+            this.sortAnimationPromises = [];
+            this.sortPromise = null;
+        });
     }
 
     public getSlotPosition ( index: number ): Vec3
@@ -198,9 +234,9 @@ export class Item extends Component
         return ShelfContainer.instance.listShelfSlots[ index ].node.worldPosition;
     }
 
-    public bounceItem (boundcePower: number): void
+    public bounceItem ( boundcePower: number ): void
     {
-        Tween.stopAllByTarget(this.node);
+        Tween.stopAllByTarget( this.node );
         let offsetBounce = boundcePower;
         let startPos = this.node.worldPosition.clone();
         let newPosition = new Vec3( startPos.x, startPos.y - offsetBounce, startPos.z );
@@ -212,6 +248,58 @@ export class Item extends Component
                 .start();
         }
     }
+
+    //#region Collect
+    public Collect ( pos: Vec3 ): void
+    {
+        if ( this.sortSequence != null )
+        {
+            //kill sort sequence
+            this.sortSequence.stop();
+            this.sortSequence = null;
+        }
+
+        Tween.stopAllByTarget( this.node );
+        this.isMerging = true;
+        this.sortSequence.stop();
+        //Move the object up then move to the collection pos
+        let upPos = new Vec3( this.node.worldPosition.x, pos.y + this.upCollectionOffset.y, this.node.worldPosition.z );
+        let xPos = new Vec3( pos.x, pos.y + this.upCollectionOffset.y, pos.z )
+        tween( this.node )
+            .to( VariableConfig.COLLECT_TIME, { worldPosition: upPos }, { easing: 'sineOut' } )
+            .start();
+        tween( this.node )
+            .to( VariableConfig.COLLECT_TIME, { worldPosition: xPos }, { easing: 'backIn' } )
+            .start();
+    }
+    //#endregion
+
+    //#region MidCollected
+    public midCollected (): void
+    {
+        Tween.stopAllByTarget( this.node );
+        tween( this.node )
+            .to( 0.1, { scale: new Vec3( VariableConfig.onShelftScale.x * 1.5, VariableConfig.onShelftScale.y * 1.5, VariableConfig.onShelftScale.z * 1.5 ) }, { easing: 'sineOut' } )
+            .to( 0.05, { scale: VariableConfig.onShelftScale }, { easing: 'cubicIn' } )
+            .call( () => { this.node.active = false; } )
+            .start();
+    }
+    //#endregion
+
+    //#region Pickup
+    public PickupObj ( pickIndex: number, pickNum: number )
+    {
+        this.pickupIndex = pickIndex;
+        this.pickupNum = pickNum;
+        this.isFlying = true;
+    }
+    //#endregion
+    //#region 
+    public canSort ( sortIndex: number ): boolean
+    {
+        return this.wasPicked && sortIndex != this.pickupIndex;
+    }
+    //#endregion
+
 }
 export { ItemType };
-
