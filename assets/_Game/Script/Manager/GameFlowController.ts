@@ -23,7 +23,6 @@ export class GameFlowController extends Component
     {
         this.count += 1;
         CollectHandler.instance.UpdatePickUpItemDead( item );
-        console.log( 'count' + this.count );
         //TODO : Logic card oder
     }
 

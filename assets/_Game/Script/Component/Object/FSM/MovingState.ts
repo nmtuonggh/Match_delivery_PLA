@@ -45,6 +45,7 @@ export class MovingState implements IState
         else
         {
             shelfContainer.currentPickedActiveCount++;
+            //console.log("Can't matched + " + shelfContainer.currentPickedActiveCount);
             //TODO: CheckLose here
         }
 
@@ -63,6 +64,7 @@ export class MovingState implements IState
         }
 
         //call Animation to move item to slot
+        //console.log("Pickup item at index " + pickupIndex);
         this.pickupItem( item, pickupIndex, shelfContainer.pickupNum,
             shelfContainer.getSlotPos( pickupIndex ) )
             .then( () =>
@@ -70,6 +72,8 @@ export class MovingState implements IState
                 //TODO: Nhun
             } );
         shelfContainer.pickupNum++;
+        console.log("Sort item on shelf on Movingstate");
+
         shelfContainer.sortItemOnShelf();
         //TODO: Warning
 
@@ -95,7 +99,7 @@ export class MovingState implements IState
         item.PickupObj( pickupIndex, pickupNum );
         item.prePickupPos = item.node.getWorldPosition().clone();
         item.preRotation = item.node.getWorldRotation().clone();
-        item.pickupIndex = pickupIndex;
+        item.pickupIndexLogic = pickupIndex;
         item.pickupPos = pickupPos;
 
         Tween.stopAllByTarget( item.node );
@@ -118,9 +122,15 @@ export class MovingState implements IState
         Vec3.scaleAndAdd( offset, offset, direction, -2 );
         let bezierPos = new Vec3();
         Vec3.add( bezierPos, midPoint, offset );
-        BezierTweenWorld( item.node, VariableConfig.PICKUP_TIME, startPos, bezierPos, endPos ).then( () =>
+        
+        // Lưu tween reference để có thể cancel sau này
+        const bezierResult = BezierTweenWorld( item.node, VariableConfig.PICKUP_TIME, startPos, bezierPos, endPos );
+        item.pickupTween = bezierResult.tween;
+        
+        bezierResult.promise.then( () =>
         {
             //TODO: EFFECT
+            item.pickupTween = null; // Clear reference khi hoàn thành
         } );
         //TODO : Rotate khi time tween nhay dc 1 nua
 

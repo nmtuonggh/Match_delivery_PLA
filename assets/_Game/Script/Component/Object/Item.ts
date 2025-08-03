@@ -40,9 +40,10 @@ export class Item extends Component
     public sortPromise: Promise<void> | null = null;
     public animationPromise: Promise<void> | null = null;
     public bouncePromise: Promise<void> | null = null;
-
+    public pickupTween: Tween<any> | null = null; // Thêm để track pickup animation
     public sortSequence: Tween<Node> | null = null;
-    public pickupIndex: number = 0;
+    public pickupIndexLogic: number = 0;
+    public pickupIndexStatus: number = 0;
     public pickupNum: number = 0;
     public pickupPos: Vec3 = new Vec3( 0, 0, 0 );
     public isFlying: boolean = false;
@@ -138,33 +139,32 @@ export class Item extends Component
         return this.stateMachine.getCurrentStateName();
     }
 
-    public sortItem ( newIndexPos: number ): void
+    public async sortItem ( newIndexPos: number ): Promise<void>
     {
         if ( !this.canSort( newIndexPos ) ) return;
         if ( this.isMerging ) return;
-        if ( this.sortSequence )
+        if ( this.pickupTween )
         {
-            this.sortSequence.stop();
+            this.pickupTween.stop();
+            this.pickupTween = null;
         }
         if ( this.sortAnimationPromises )
         {
-            // Stop tất cả animations hiện tại
-            Tween.stopAllByTarget( this.node );
             this.sortAnimationPromises = [];
             this.sortPromise = null;
         }
         this.pickupPos = this.getSlotPosition( newIndexPos );
-        this.pickupIndex = newIndexPos;
-        Tween.stopAllByTarget( this.node );
+        this.pickupIndexStatus = newIndexPos;
+        //Tween.stopAllByTarget( this.node );
 
         //hopping to new pos
-        let currentIndex = this.pickupIndex;
-        let delay = newIndexPos > this.pickupIndex ? 0 : this.pickupIndex * 0.05;
+        let currentIndex = this.pickupIndexLogic;
+        let delay = newIndexPos > this.pickupIndexLogic ? 0 : this.pickupIndexLogic * 0.05;
 
         // Tạo mảng để lưu tất cả các promises từ BezierTweenWorld
         this.sortAnimationPromises = [];
 
-        if ( newIndexPos < this.pickupIndex )
+        if ( newIndexPos < this.pickupIndexLogic )
         {
             for ( let i = currentIndex - 1; i >= newIndexPos; i-- )
             {
@@ -180,17 +180,18 @@ export class Item extends Component
                     ( startPos.z + targetPos.z ) / 2
                 );
 
-                const animationPromise = BezierTweenWorld( this.node, VariableConfig.SORT_TIME, startPos, controlPoint, targetPos )
-                    .then( () =>
+                console.log("Sort item" + this.node.name + " to index " + i1);
+                const animationPromise = BezierTweenWorld( this.node, VariableConfig.SORT_TIME, startPos, controlPoint, targetPos, delay )
+                    .promise.then( () =>
                     {
-                        this.pickupIndex = i1;
+                        this.pickupIndexLogic = i1;
                         //TODO: Bounce
                     } );
 
                 this.sortAnimationPromises.push( animationPromise );
             }
         }
-        else if ( newIndexPos > this.pickupIndex )
+        else if ( newIndexPos > this.pickupIndexLogic )
         {
             for ( let i = currentIndex + 1; i <= newIndexPos; i++ )
             {
@@ -206,10 +207,10 @@ export class Item extends Component
                     ( startPos.z + targetPos.z ) / 2
                 );
 
-                const animationPromise = BezierTweenWorld( this.node, VariableConfig.SORT_TIME, startPos, controlPoint, targetPos )
-                    .then( () =>
+                const animationPromise = BezierTweenWorld( this.node, VariableConfig.SORT_TIME, startPos, controlPoint, targetPos, delay )
+                    .promise.then( () =>
                     {
-                        this.pickupIndex = i1;
+                        this.pickupIndexLogic = i1;
                         //TODO: Bounce
                     } );
 
@@ -219,8 +220,10 @@ export class Item extends Component
 
         this.sortPromise = Promise.all( this.sortAnimationPromises ).then( () => 
         {
-            this.pickupIndex = newIndexPos;
-            this.node.setWorldPosition( this.pickupPos );
+            this.pickupIndexLogic = newIndexPos;
+            tween( this.node )
+            .to( 0, { worldPosition: this.pickupPos } )
+            .start();
             this.sortAnimationPromises = [];
             this.sortPromise = null;
         } );
@@ -303,7 +306,7 @@ export class Item extends Component
     //#region Pickup
     public PickupObj ( pickIndex: number, pickNum: number )
     {
-        this.pickupIndex = pickIndex;
+        this.pickupIndexStatus = pickIndex;
         this.pickupNum = pickNum;
         this.isFlying = true;
     }
@@ -311,7 +314,7 @@ export class Item extends Component
     //#region CanSort
     public canSort ( sortIndex: number ): boolean
     {
-        return this.wasPicked && sortIndex != this.pickupIndex;
+        return this.wasPicked && sortIndex != this.pickupIndexStatus;
     }
     //#endregion
     //#region CanNotCollect
