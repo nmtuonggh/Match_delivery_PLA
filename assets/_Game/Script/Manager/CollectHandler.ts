@@ -16,7 +16,7 @@ export class CollectHandler extends Component
     public UpdatePickUpItemDead ( item: Item ): void
     {
         let shelfContainer = ShelfContainer.instance;
-        console.log("Sort item on UpdatePickUpItemDead");
+        // console.log("Sort item on UpdatePickUpItemDead");
 
         shelfContainer.sortItemOnShelf();
 
@@ -69,7 +69,6 @@ export class CollectHandler extends Component
         shelfContainer.listPickedItem.splice( centerIndex - 1, 3 );
         shelfContainer.currentPickedTotalCount -= 3;
         shelfContainer.doneMoveCountCheck -= 3;
-        console.log("Sort item on IECollect");
 
         shelfContainer.sortItemOnShelf();
         callback( matchItem1 );

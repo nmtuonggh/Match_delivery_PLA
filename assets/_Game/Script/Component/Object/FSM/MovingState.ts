@@ -9,6 +9,7 @@ import { ShelfSlot } from '../../Shelf/ShelfSlot';
 import { VariableConfig } from '../../../Config/VariableConfig';
 import { PickObjHandler } from '../../../Interact/PickObjHandler';
 import { GameFlowController } from '../../../Manager/GameFlowController';
+import { GameController } from '../../../Manager/GameController';
 const { ccclass, property } = _decorator;
 
 @ccclass( 'MovingState' )
@@ -47,7 +48,13 @@ export class MovingState implements IState
             shelfContainer.currentPickedActiveCount++;
             //console.log("Can't matched + " + shelfContainer.currentPickedActiveCount);
             //TODO: CheckLose here
+            if ( shelfContainer.isFullSlot() )
+            {
+                GameController.instance.loseGame();
+                return;   
+            }
         }
+        
 
         // if exist on bar -> insert behind it, else just stick it to bottom
         shelfContainer.currentPickedTotalCount += 1;
@@ -72,7 +79,6 @@ export class MovingState implements IState
                 //TODO: Nhun
             } );
         shelfContainer.pickupNum++;
-        console.log("Sort item on shelf on Movingstate");
 
         shelfContainer.sortItemOnShelf();
         //TODO: Warning

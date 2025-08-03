@@ -61,11 +61,14 @@ export class ShelfContainer extends Component
     //#endregion
 
     //#region Public methods
-
-    isFullSlot (): boolean
+    //#region IsFullSlot
+    public isFullSlot (): boolean
     {
+        console.log("Current picked active count: " + this.currentPickedActiveCount);
+        console.log("List shelf slots length: " + this.listShelfSlots.length);
         return this.currentPickedActiveCount >= this.listShelfSlots.length;
-    }
+    }   
+    //#endregion
     //#region GetSlotAndCheckMatch
     public getSlotAndCheckMatch ( item: Item ): { index: number, canMatched: boolean }
     {

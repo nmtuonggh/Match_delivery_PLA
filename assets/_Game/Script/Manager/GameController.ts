@@ -35,6 +35,7 @@ export class GameController extends Component
 
     loseGame (): void
     {
+        console.log("Lose game");
         this.loseNode.active = true;
     }
 

@@ -42,6 +42,7 @@ export class Item extends Component
     public bouncePromise: Promise<void> | null = null;
     public pickupTween: Tween<any> | null = null; // Thêm để track pickup animation
     public sortSequence: Tween<Node> | null = null;
+    @property( { type: Number , readonly: true} )
     public pickupIndexLogic: number = 0;
     public pickupIndexStatus: number = 0;
     public pickupNum: number = 0;
@@ -139,6 +140,7 @@ export class Item extends Component
         return this.stateMachine.getCurrentStateName();
     }
 
+    //#region Sort Item
     public async sortItem ( newIndexPos: number ): Promise<void>
     {
         if ( !this.canSort( newIndexPos ) ) return;
@@ -151,7 +153,7 @@ export class Item extends Component
         if ( this.sortAnimationPromises )
         {
             this.sortAnimationPromises = [];
-            this.sortPromise = null;
+            this.sortAnimationPromises = null;
         }
         this.pickupPos = this.getSlotPosition( newIndexPos );
         this.pickupIndexStatus = newIndexPos;
@@ -221,9 +223,9 @@ export class Item extends Component
         this.sortPromise = Promise.all( this.sortAnimationPromises ).then( () => 
         {
             this.pickupIndexLogic = newIndexPos;
-            tween( this.node )
-            .to( 0, { worldPosition: this.pickupPos } )
-            .start();
+            // tween( this.node )
+            // .to( 0, { worldPosition: this.pickupPos } )
+            // .start();
             this.sortAnimationPromises = [];
             this.sortPromise = null;
         } );
@@ -231,7 +233,8 @@ export class Item extends Component
 
     public getSlotPosition ( index: number ): Vec3
     {
-        return ShelfContainer.instance.listShelfSlots[ index ].node.worldPosition;
+        //debugger;
+        return ShelfContainer.instance.getSlotPos(index);
     }
 
     public bounceItem ( boundcePower: number ): void
