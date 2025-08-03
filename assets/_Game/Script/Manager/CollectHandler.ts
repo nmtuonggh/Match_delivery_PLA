@@ -8,10 +8,6 @@ const { ccclass, property } = _decorator;
 export class CollectHandler extends Component
 {
     public static instance: CollectHandler = null;
-    
-    // Lock mechanism tương tự Unity's lock
-    private isLocked: boolean = false;
-    private lockQueue: (() => void)[] = [];
 
     public onLoad (): void
     {
@@ -19,58 +15,16 @@ export class CollectHandler extends Component
     }
     public UpdatePickUpItemDead ( item: Item ): void
     {
-        // Sử dụng lock tương tự Unity's lock (m_PickedUp)
-        this.ExecuteWithLock(() => {
-            this.UpdatePickUpItemDeadInternal(item);
-        });
-    }
-    
-    /**
-     * Execute function với lock mechanism
-     */
-    private ExecuteWithLock(action: () => void): void
-    {
-        if (this.isLocked) {
-            // Nếu đang lock, thêm vào queue
-            this.lockQueue.push(action);
-            return;
-        }
-        
-        // Acquire lock
-        this.isLocked = true;
-        
-        try {
-            // Execute action
-            action();
-        } finally {
-            // Release lock
-            this.isLocked = false;
-            
-            // Process next item in queue
-            if (this.lockQueue.length > 0) {
-                const nextAction = this.lockQueue.shift();
-                if (nextAction) {
-                    this.ExecuteWithLock(nextAction);
-                }
-            }
-        }
-    }
-    
-    /**
-     * Logic gốc của UpdatePickUpItemDead, giờ chạy trong lock
-     */
-    private UpdatePickUpItemDeadInternal(item: Item): void
-    {
         let shelfContainer = ShelfContainer.instance;
         shelfContainer.sortItemOnShelf();
 
         if ( !item.isDead ) return;
 
-        for ( let i = 0; i < shelfContainer.currentPickedTotalCount; i++ )
+        for ( let i = 0; i < shelfContainer.doneMoveCountCheck; i++ )
         {
             let obj = shelfContainer.listPickedItem[ i ];
             if ( obj.canNotCollect() ) continue;
-            if ( i >= shelfContainer.currentPickedTotalCount - 2 ) continue;
+            if ( i >= shelfContainer.doneMoveCountCheck - 2 ) continue;
             if ( shelfContainer.listPickedItem[ i + 1 ].canNotCollect() ||
                 shelfContainer.listPickedItem[ i + 2 ].canNotCollect() ) continue;
 
@@ -112,6 +66,7 @@ export class CollectHandler extends Component
         //loai 3 item nay ra khoi , llloai theo object  
         shelfContainer.listPickedItem.splice( centerIndex - 1, 3 );
         shelfContainer.currentPickedTotalCount -= 3;
+        shelfContainer.doneMoveCountCheck -= 3;
 
         shelfContainer.sortItemOnShelf();
         callback( matchItem1 );
