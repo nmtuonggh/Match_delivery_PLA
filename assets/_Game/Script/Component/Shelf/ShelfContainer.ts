@@ -97,12 +97,13 @@ export class ShelfContainer extends Component
         {
             return false;
         }
-        return item.itemType === this.listPickedItem[ index ].itemType && !this.listPickedItem[ index ].isMatching;
+        return item.itemType === this.listPickedItem[ index ].itemType && !this.listPickedItem[ index ].isDead;
     }
     //#endregion
     //#region SortItemOnShelf
     public async sortItemOnShelf (): Promise<void>
     {
+        window.this = this;
         for ( let i = this.currentPickedTotalCount - 1; i >= 0; i-- )
         {
             let item = this.listPickedItem[ i ];

@@ -109,12 +109,15 @@ export function moveAlongParabola ( node: Node, start: Vec3, end: Vec3, height: 
     updatePosition();
 }
 
-export function BezierTweenWorld ( node: Node, duration: number, p1: Vec3, p2: Vec3, p3: Vec3 ): Promise<void>
+export function BezierTweenWorld ( node: Node, duration: number, p1: Vec3, p2: Vec3, p3: Vec3, delay: number = 0 ): { promise: Promise<void>, tween: Tween<any> }
 {
-    return new Promise<void>( ( resolve ) =>
+    let tweenObj = { t: 0 };
+    let tweenInstance: Tween<any>;
+    
+    const promise = new Promise<void>( ( resolve ) =>
     {
-        let tweenObj = { t: 0 };
-        tween( tweenObj )
+        tweenInstance = tween( tweenObj )
+            .delay( delay )
             .to( duration, { t: 1 }, {
                 onUpdate: ( target: { t: number; }, ratio ) =>
                 {
@@ -128,6 +131,8 @@ export function BezierTweenWorld ( node: Node, duration: number, p1: Vec3, p2: V
             } )
             .start();
     } );
+    
+    return { promise, tween: tweenInstance };
 }
 
 export function bezierPosition1 ( p1: Vec3, p2: Vec3, p3: Vec3, t: number ): Vec3
@@ -141,10 +146,3 @@ export function bezierPosition1 ( p1: Vec3, p2: Vec3, p3: Vec3, t: number ): Vec
     let z = ( uu * p1.z ) + ( 2 * u * t * p2.z ) + ( tt * p3.z );
     return new Vec3( x, y, z );
 }
-
-
-
-
-
-
-
