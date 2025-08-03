@@ -136,6 +136,7 @@ export class MovingState implements IState
         bezierResult.promise.then( () =>
         {
             //TODO: EFFECT
+            ShelfContainer.instance.bounceSlot( 1, item.pickupIndexLogic, item );
             item.pickupTween = null; // Clear reference khi hoàn thành
         } );
         //TODO : Rotate khi time tween nhay dc 1 nua

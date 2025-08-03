@@ -143,6 +143,7 @@ export class Item extends Component
     //#region Sort Item
     public async sortItem ( newIndexPos: number ): Promise<void>
     {
+        window.item = this;
         if ( !this.canSort( newIndexPos ) ) return;
         if ( this.isMerging ) return;
         if ( this.pickupTween )
@@ -153,7 +154,7 @@ export class Item extends Component
         if ( this.sortAnimationPromises )
         {
             this.sortAnimationPromises = [];
-            this.sortAnimationPromises = null;
+            this.sortPromise = null;
         }
         this.pickupPos = this.getSlotPosition( newIndexPos );
         this.pickupIndexStatus = newIndexPos;
@@ -188,6 +189,7 @@ export class Item extends Component
                     {
                         this.pickupIndexLogic = i1;
                         //TODO: Bounce
+                        ShelfContainer.instance.bounceSlot( 0.5, this.pickupIndexLogic, this );
                     } );
 
                 this.sortAnimationPromises.push( animationPromise );
@@ -214,6 +216,7 @@ export class Item extends Component
                     {
                         this.pickupIndexLogic = i1;
                         //TODO: Bounce
+                        ShelfContainer.instance.bounceSlot( 0.5, this.pickupIndexLogic, this );
                     } );
 
                 this.sortAnimationPromises.push( animationPromise );

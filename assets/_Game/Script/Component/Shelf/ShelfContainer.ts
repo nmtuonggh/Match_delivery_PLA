@@ -115,19 +115,20 @@ export class ShelfContainer extends Component
     }
     //#endregion
     //#region Bounce
-    public async bounceSlotRender ( boundcePower: number, index: number ): Promise<void>
+    public async bounceSlot ( boundcePower: number, index: number , item: Item): Promise<void>
     {
+        if(index < 0 || index >= this.listShelfRender.length) return;
+        let shakeForce = boundcePower ;
         let render = this.listShelfRender[ index ];
-        let offsetBounce = boundcePower;
-        let startPos = this.listShelfRenderStartPos[ index ];
-        let newPosition = new Vec3( startPos.clone().x, startPos.clone().y - offsetBounce, startPos.clone().z );
-        if ( render )
-        {
-            tween( render )
-                .to( 0.08, { worldPosition: newPosition }, { easing: 'sineIn' } )
-                .to( 0.8, { worldPosition: startPos }, { easing: 'elasticOut' } )
-                .start();
-        }
+        //Tween.stopAllByTarget(render);
+        item.node.setParent(render, true);
+        //item.node.eulerAngles = new Vec3(10,180,0);
+        let downPos = render.worldPosition.clone().add3f(0,-shakeForce,0);
+        let upPos = render.worldPosition.clone();
+        tween(render)
+            .to(VariableConfig.TIME_TILE_ARRIVED,{worldPosition:downPos},{easing:'sineIn'})
+            .to(VariableConfig.TIME_TILE_BOUNCE,{worldPosition:upPos},{easing:'elasticOut'})
+            .start();
     }
     //#endregion
     //#region GetSlotPos
