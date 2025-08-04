@@ -91,6 +91,8 @@ export class Item extends Component
 
     start ()
     {
+        let physic = this.getComponent(RigidBody);
+        physic.mass = 10;
         this.initStateMachine();
         this.startScale = new Vec3( 2, 2, 2 );
     }
