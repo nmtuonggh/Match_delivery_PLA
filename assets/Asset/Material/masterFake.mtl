@@ -5,7 +5,7 @@
   "__editorExtras__": {},
   "_native": "",
   "_effectAsset": {
-    "__uuid__": "286d52ba-15ef-4ae6-aca0-6e398c2c71f5",
+    "__uuid__": "9b20a514-6cc3-49de-b216-b6b863046249",
     "__expectedType__": "cc.EffectAsset"
   },
   "_techIdx": 0,
@@ -14,10 +14,63 @@
       "USE_INSTANCING": true
     },
     {
-      "USE_INSTANCING": true
-    }
+      "USE_INSTANCING": true,
+      "USE_BASE_COLOR_MAP": true,
+      "BASE_COLOR_MAP_AS_SHADE_MAP_1": true,
+      "BASE_COLOR_MAP_AS_SHADE_MAP_2": true
+    },
+    {},
+    {},
+    {},
+    {},
+    {}
   ],
   "_states": [
+    {
+      "rasterizerState": {},
+      "depthStencilState": {},
+      "blendState": {
+        "targets": [
+          {}
+        ]
+      }
+    },
+    {
+      "rasterizerState": {},
+      "depthStencilState": {},
+      "blendState": {
+        "targets": [
+          {}
+        ]
+      }
+    },
+    {
+      "rasterizerState": {},
+      "depthStencilState": {},
+      "blendState": {
+        "targets": [
+          {}
+        ]
+      }
+    },
+    {
+      "rasterizerState": {},
+      "depthStencilState": {},
+      "blendState": {
+        "targets": [
+          {}
+        ]
+      }
+    },
+    {
+      "rasterizerState": {},
+      "depthStencilState": {},
+      "blendState": {
+        "targets": [
+          {}
+        ]
+      }
+    },
     {
       "rasterizerState": {},
       "depthStencilState": {},
@@ -38,6 +91,7 @@
     }
   ],
   "_props": [
+    {},
     {
       "mainColor": {
         "__type__": "cc.Color",
@@ -46,19 +100,40 @@
         "b": 255,
         "a": 255
       },
+      "shadeColor1": {
+        "__type__": "cc.Color",
+        "r": 182,
+        "g": 168,
+        "b": 142,
+        "a": 255
+      },
+      "shadeColor2": {
+        "__type__": "cc.Color",
+        "r": 105,
+        "g": 91,
+        "b": 91,
+        "a": 255
+      },
+      "specular": {
+        "__type__": "cc.Color",
+        "r": 0,
+        "g": 0,
+        "b": 0,
+        "a": 76
+      },
+      "baseStep": 1.2,
+      "baseFeather": 0.6,
+      "shadeStep": 1,
+      "shadeFeather": 0.5,
       "mainTexture": {
         "__uuid__": "20cf879a-2275-41cf-ab0b-65395d2d7717@6c48a",
         "__expectedType__": "cc.Texture2D"
-      },
-      "shadowSetting": {
-        "__type__": "cc.Vec4",
-        "x": 0.1,
-        "y": 1.2,
-        "z": 0.45,
-        "w": 10.5
-      },
-      "transparent": 1
+      }
     },
+    {},
+    {},
+    {},
+    {},
     {}
   ]
 }
