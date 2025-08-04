@@ -120,11 +120,12 @@ export class ShelfContainer extends Component
         if(index < 0 || index >= this.listShelfRender.length) return;
         let shakeForce = boundcePower ;
         let render = this.listShelfRender[ index ];
+        let renderStartPos = this.listShelfRenderStartPos[ index ];
         //Tween.stopAllByTarget(render);
         item.node.setParent(render, true);
         //item.node.eulerAngles = new Vec3(10,180,0);
-        let downPos = render.worldPosition.clone().add3f(0,-shakeForce,0);
-        let upPos = render.worldPosition.clone();
+        let downPos = renderStartPos.clone().add3f(0,-shakeForce,0);
+        let upPos = renderStartPos.clone();
         tween(render)
             .to(VariableConfig.TIME_TILE_ARRIVED,{worldPosition:downPos},{easing:'sineIn'})
             .to(VariableConfig.TIME_TILE_BOUNCE,{worldPosition:upPos},{easing:'elasticOut'})
