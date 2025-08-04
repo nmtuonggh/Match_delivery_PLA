@@ -52,7 +52,16 @@ export class PickObjHandler extends Component
         // this.stopPick(this.currentItem);
         if ( this.currentItem )
         {
-            this.currentItem.getComponent( Item ).moveToShelf();
+            if ( ShelfContainer.instance.currentPickedTotalCount >= ShelfContainer.instance.listShelfRender.length )
+            {
+                this.currentItem.getComponent( Item ).drop();
+                this.turnOffOutline( this.currentItem );
+                this.currentItem = null;
+            }
+            else
+            {
+                this.currentItem.getComponent( Item ).moveToShelf();
+            }
         }
         this.currentItem = null;
     }
