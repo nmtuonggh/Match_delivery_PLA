@@ -11,6 +11,7 @@ import { ItemType } from './ItemTypeEnum';
 import { AudioSystem } from '../../Audio/AudioSystem';
 import { ParticleSpawnManager } from '../../Manager/ParticleSpawnManager';
 import { PickObjHandler } from '../../Interact/PickObjHandler';
+import { ItemOderController } from '../ItemOder/ItemOderController';
 const { ccclass, property } = _decorator;
 
 /**
@@ -192,7 +193,6 @@ export class Item extends Component
                     .promise.then( () =>
                     {
                         this.pickupIndexLogic = i1;
-                        //TODO: Bounce
                         ShelfContainer.instance.bounceSlot( 0.5, this.pickupIndexLogic, this );
                     } );
 
@@ -219,7 +219,6 @@ export class Item extends Component
                     .promise.then( () =>
                     {
                         this.pickupIndexLogic = i1;
-                        //TODO: Bounce
                         ShelfContainer.instance.bounceSlot( 0.5, this.pickupIndexLogic, this );
                     } );
 
@@ -298,7 +297,8 @@ export class Item extends Component
             .call( () =>
             {
                 this.node.active = false;
-                ParticleSpawnManager.instance.spawn3DParticle( 0, new Vec3( startPos.x, startPos.y + 5, startPos.z ) );
+                ItemOderController.instance.onItemMatched(this.itemType, this.pickupNum);
+                AudioSystem.instance.playMatchObj();
             } )
             .start();
         tween( this.node )

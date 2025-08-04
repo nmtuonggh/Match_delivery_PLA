@@ -10,6 +10,8 @@ import { VariableConfig } from '../../../Config/VariableConfig';
 import { PickObjHandler } from '../../../Interact/PickObjHandler';
 import { GameFlowController } from '../../../Manager/GameFlowController';
 import { GameController } from '../../../Manager/GameController';
+import { ItemOderController } from '../../ItemOder/ItemOderController';
+import { AudioSystem } from '../../../Audio/AudioSystem';
 const { ccclass, property } = _decorator;
 
 @ccclass( 'MovingState' )
@@ -46,13 +48,6 @@ export class MovingState implements IState
         else
         {
             shelfContainer.currentPickedActiveCount++;
-            //console.log("Can't matched + " + shelfContainer.currentPickedActiveCount);
-            //TODO: CheckLose here
-            if ( shelfContainer.isFullSlot() )
-            {
-                GameController.instance.loseGame();
-                return;   
-            }
         }
         
 
@@ -111,10 +106,10 @@ export class MovingState implements IState
         Tween.stopAllByTarget( item.node );
         GameFlowController.instance.onStartPickup( item );
 
-        let shelfScale = new Vec3( 0.75, 0.75, 0.75 );
+       
         tween( item.node )
             .to( VariableConfig.PICKUP_TIME * 0.75, { scale: item.startScale.clone().multiplyScalar( 1.5 ) } )
-            .to( VariableConfig.PICKUP_TIME * 0.25, { scale: shelfScale } )
+            .to( VariableConfig.PICKUP_TIME * 0.25, { scale: VariableConfig.onShelftScale } )
             .start()
 
         let startPos = item.node.getWorldPosition();
@@ -135,21 +130,20 @@ export class MovingState implements IState
         
         bezierResult.promise.then( () =>
         {
-            //TODO: EFFECT
             ShelfContainer.instance.bounceSlot( 1, item.pickupIndexLogic, item );
             item.pickupTween = null; // Clear reference khi hoàn thành
         } );
         //TODO : Rotate khi time tween nhay dc 1 nua
 
         tween( item.node )
-            .to( VariableConfig.PICKUP_TIME, { eulerAngles: new Vec3( 0, 180, 0 ) } )
+            .to( VariableConfig.PICKUP_TIME, { eulerAngles: new Vec3(-20, 180, 0 ) } )
             .call( () =>
             {
                 item.isFlying = false;
                 item.wasPicked = true;
                 item.node.worldPosition = item.pickupPos;
                 ShelfContainer.instance.doneMoveCountCheck++;
-                GameFlowController.instance.onComplete( item );
+                GameFlowController.instance.onCompleteMoveToShelf( item );
             } )
             .start();
 

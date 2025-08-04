@@ -17,6 +17,8 @@ export class ItemOder extends Component
     public checkNode: Sprite;
     @property(Color)
     public highLightColor: Color;
+    @property(Node)
+    public doneNode: Node;
 
     public currentPickedCount: number = 0;
     public isCompleted: boolean = false;
@@ -76,5 +78,10 @@ export class ItemOder extends Component
             .start();
     }
 
-    
+    public onDone (): void
+    {
+        tween(this.doneNode)
+            .to(0.1, { scale: new Vec3(1, 1, 1) }, { easing: 'smooth' })
+            .start();
+    }
 }

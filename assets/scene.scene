@@ -75,7 +75,7 @@
     },
     "autoReleaseAssets": false,
     "_globals": {
-      "__id__": 630
+      "__id__": 639
     },
     "_id": "7fbb20fe-c08a-4969-ad7d-182a796e9f3a"
   },
@@ -3162,7 +3162,7 @@
         "__id__": 115
       }
     ],
-    "_active": true,
+    "_active": false,
     "_components": [
       {
         "__id__": 125
@@ -3323,7 +3323,7 @@
     "propertyPath": [
       "_active"
     ],
-    "value": true
+    "value": false
   },
   {
     "__type__": "CCPropertyOverrideInfo",
@@ -10975,16 +10975,40 @@
     "backgroundMusic": {
       "__id__": 584
     },
-    "pickObj": {
+    "pickObj1": {
+      "__uuid__": "05121914-457a-4f95-bf6a-ff32454ac2be",
+      "__expectedType__": "cc.AudioClip"
+    },
+    "pickObj2": {
       "__uuid__": "5e8713e1-b43c-4e13-9e50-0ff06715c747",
       "__expectedType__": "cc.AudioClip"
     },
-    "matchObj": {
-      "__uuid__": "7778644a-c6d0-410b-9632-b04c1269fbf2",
+    "matchObj1": {
+      "__uuid__": "a21ac65f-62c8-4e9b-886e-f249fb56fba3",
+      "__expectedType__": "cc.AudioClip"
+    },
+    "matchObj2": {
+      "__uuid__": "7e4fd346-1084-48a7-b977-48a360f04f31",
       "__expectedType__": "cc.AudioClip"
     },
     "doneOder": {
-      "__uuid__": "f915952a-0774-451a-b888-7e1cf5f89d73",
+      "__uuid__": "028adf2a-183d-4f61-971e-64c353161ba4",
+      "__expectedType__": "cc.AudioClip"
+    },
+    "oderChange": {
+      "__uuid__": "d83a7b1b-6a5a-467b-87a7-918ec0108c06",
+      "__expectedType__": "cc.AudioClip"
+    },
+    "objOnShelf": {
+      "__uuid__": "903a3ace-e860-4b26-a56b-0ff7f8e1c03c",
+      "__expectedType__": "cc.AudioClip"
+    },
+    "loseGame": {
+      "__uuid__": "f6757571-71f9-4f95-ae2b-c5a6963648ca",
+      "__expectedType__": "cc.AudioClip"
+    },
+    "winGame": {
+      "__uuid__": "4b52acee-a937-4682-ba5f-91f969123299",
       "__expectedType__": "cc.AudioClip"
     },
     "_id": "c7IOCWH5pJJ7FaQ9zGceBZ"
@@ -11283,6 +11307,15 @@
       },
       {
         "__id__": 627
+      },
+      {
+        "__id__": 630
+      },
+      {
+        "__id__": 633
+      },
+      {
+        "__id__": 636
       }
     ],
     "nestedPrefabInstanceRoots": [
@@ -11781,30 +11814,120 @@
     ]
   },
   {
-    "__type__": "cc.SceneGlobals",
-    "ambient": {
+    "__type__": "cc.TargetOverrideInfo",
+    "source": {
+      "__id__": 164
+    },
+    "sourceInfo": {
       "__id__": 631
     },
-    "shadows": {
+    "propertyPath": [
+      "doneNode"
+    ],
+    "target": {
+      "__id__": 164
+    },
+    "targetInfo": {
       "__id__": 632
+    }
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "a2hEGZNYdEt57x7bQGtHiS"
+    ]
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "ecZLlWcxBNXKIkyXA1RBNK"
+    ]
+  },
+  {
+    "__type__": "cc.TargetOverrideInfo",
+    "source": {
+      "__id__": 182
     },
-    "_skybox": {
-      "__id__": 633
-    },
-    "fog": {
+    "sourceInfo": {
       "__id__": 634
     },
-    "octree": {
+    "propertyPath": [
+      "doneNode"
+    ],
+    "target": {
+      "__id__": 182
+    },
+    "targetInfo": {
       "__id__": 635
+    }
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "a2hEGZNYdEt57x7bQGtHiS"
+    ]
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "ecZLlWcxBNXKIkyXA1RBNK"
+    ]
+  },
+  {
+    "__type__": "cc.TargetOverrideInfo",
+    "source": {
+      "__id__": 141
     },
-    "skin": {
-      "__id__": 636
-    },
-    "lightProbeInfo": {
+    "sourceInfo": {
       "__id__": 637
     },
-    "postSettings": {
+    "propertyPath": [
+      "doneNode"
+    ],
+    "target": {
+      "__id__": 141
+    },
+    "targetInfo": {
       "__id__": 638
+    }
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "a2hEGZNYdEt57x7bQGtHiS"
+    ]
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "ecZLlWcxBNXKIkyXA1RBNK"
+    ]
+  },
+  {
+    "__type__": "cc.SceneGlobals",
+    "ambient": {
+      "__id__": 640
+    },
+    "shadows": {
+      "__id__": 641
+    },
+    "_skybox": {
+      "__id__": 642
+    },
+    "fog": {
+      "__id__": 643
+    },
+    "octree": {
+      "__id__": 644
+    },
+    "skin": {
+      "__id__": 645
+    },
+    "lightProbeInfo": {
+      "__id__": 646
+    },
+    "postSettings": {
+      "__id__": 647
     },
     "bakedWithStationaryMainLight": false,
     "bakedWithHighpLightmap": false

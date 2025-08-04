@@ -64,8 +64,6 @@ export class ShelfContainer extends Component
     //#region IsFullSlot
     public isFullSlot (): boolean
     {
-        console.log( "Current picked active count: " + this.currentPickedActiveCount );
-        console.log( "List shelf slots length: " + this.listShelfSlots.length );
         return this.currentPickedActiveCount >= this.listShelfSlots.length;
     }
     //#endregion
@@ -123,7 +121,7 @@ export class ShelfContainer extends Component
         let renderStartPos = this.listShelfRenderStartPos[ index ];
         //Tween.stopAllByTarget(render);
         item.node.setParent( render, true );
-        //item.node.eulerAngles = new Vec3(10,180,0);
+        item.node.eulerAngles = new Vec3( -20, 180, 0 );
         let downPos = renderStartPos.clone().add3f( 0, -shakeForce, 0 );
         let upPos = renderStartPos.clone();
         tween( render )

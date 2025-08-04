@@ -4,6 +4,7 @@ import { EventListener } from '../../GameEvent/EventListener';
 import { GameEvent } from '../../GameEvent/GameEvent';
 import { ItemType } from '../Object/Item';
 import { GameController } from '../../Manager/GameController';
+import { AudioSystem } from '../../Audio/AudioSystem';
 const { ccclass, property } = _decorator;
 
 @ccclass( 'ItemOderController' )
@@ -42,12 +43,13 @@ export class ItemOderController extends Component
         {
             GameController.instance.onDisableInput();
             GameController.instance.winGame();
+            AudioSystem.instance.playWinGame();
         }
     }
 
     init (): void
     {
-        this.listItemOders = this.itemOderNode.getComponentsInChildren( ItemOder );   
+        this.listItemOders = this.itemOderNode.getComponentsInChildren( ItemOder );
     }
 
     animInit (): void
@@ -86,25 +88,21 @@ export class ItemOderController extends Component
     }
 
     // Xử lý khi nhận được sự kiện item đã match
-    private onItemMatched ( itemType: ItemType, count: number ): void
+    public onItemMatched ( itemType: ItemType, count: number ): void
     {
-        for (const itemOder of this.listItemOders) {
-            // Chỉ xử lý nếu item type phù hợp
-            if (itemOder.itemType === itemType) {
-                // Sử dụng phương thức onItemMatched của ItemOder
-                // Nếu vừa hoàn thành yêu cầu, tạo hiệu ứng thu nhỏ
-                if (itemOder.CheckComplete()) {
-                    this.scheduleOnce(() => {
-                        tween(itemOder.node)
-                            .to(0.15, { scale: new Vec3(0, 0, 0) }, { easing: 'smooth' })
-                            .start();
-                    }, 0.1);
+        for ( const itemOder of this.listItemOders )
+        {
+            if ( itemOder.itemType === itemType )
+            {
+                if ( itemOder.CheckComplete() )
+                {
+                    itemOder.onDone();
                 }
             }
         }
     }
 
-    private onItemOnShelf ( itemType: ItemType ): void
+    public onItemOnShelf ( itemType: ItemType ): void
     {
         for ( const itemOder of this.listItemOders )
         {

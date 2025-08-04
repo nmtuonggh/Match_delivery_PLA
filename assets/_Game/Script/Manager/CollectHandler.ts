@@ -1,7 +1,8 @@
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node, Vec3 } from 'cc';
 import { Item } from '../Component/Object/Item';
 import { ShelfContainer } from '../Component/Shelf/ShelfContainer';
 import { VariableConfig } from '../Config/VariableConfig';
+import { ParticleSpawnManager } from './ParticleSpawnManager';
 const { ccclass, property } = _decorator;
 
 @ccclass( 'CollectHandler' )
@@ -78,7 +79,12 @@ export class CollectHandler extends Component
 
     public collectEffect ( item: Item )
     {
-        //TODO: Effect collect
+        let startPos = item.node.getWorldPosition().clone();
+        this.scheduleOnce( () =>
+        {
+            ParticleSpawnManager.instance.spawn3DParticle( 0, new Vec3( startPos.x, startPos.y + 4, startPos.z ) );
+        }, 0.1 );
+
     }
 
     public delay ( time: number ): Promise<void>
