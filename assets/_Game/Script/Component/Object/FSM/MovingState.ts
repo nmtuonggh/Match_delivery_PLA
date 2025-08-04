@@ -109,7 +109,15 @@ export class MovingState implements IState
        
         tween( item.node )
             .to( VariableConfig.PICKUP_TIME * 0.75, { scale: item.startScale.clone().multiplyScalar( 1.5 ) } )
+            .call( () =>
+            {
+               // console.log("Pickup item");
+            } )
             .to( VariableConfig.PICKUP_TIME * 0.25, { scale: VariableConfig.onShelftScale } )
+            .call( () =>
+            {
+                item.node.setScale( VariableConfig.onShelftScale );
+            } )
             .start()
 
         let startPos = item.node.getWorldPosition();

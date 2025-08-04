@@ -328,6 +328,7 @@
       "__id__": 19
     },
     "itemType": "Lemon",
+    "pickupIndexLogic": 0,
     "isMatching": false,
     "_id": ""
   },

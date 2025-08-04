@@ -122,6 +122,7 @@ export class ShelfContainer extends Component
         //Tween.stopAllByTarget(render);
         item.node.setParent( render, true );
         item.node.eulerAngles = new Vec3( -20, 180, 0 );
+        //item.node.setScale( VariableConfig.onShelftScale );
         let downPos = renderStartPos.clone().add3f( 0, -shakeForce, 0 );
         let upPos = renderStartPos.clone();
         tween( render )

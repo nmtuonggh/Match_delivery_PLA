@@ -14,7 +14,7 @@ export class VariableConfig
     ///
     public static DELAY_COLLECT_TIME: number = 0.05;
     public static COLLECT_TIME: number = 0.2;
-    public static onShelftScale: Vec3 = new Vec3( 1.1, 1.1, 1.1 );
+    public static onShelftScale: Vec3 = new Vec3( 0.95, 0.95, 0.95 );
     public static TIME_TILE_ARRIVED: number = 0.08;
     public static TIME_TILE_BOUNCE: number = 0.8;
 

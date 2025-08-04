@@ -243,21 +243,6 @@ export class Item extends Component
         return ShelfContainer.instance.getSlotPos( index );
     }
 
-    public bounceItem ( boundcePower: number ): void
-    {
-        Tween.stopAllByTarget( this.node );
-        let offsetBounce = boundcePower;
-        let startPos = this.node.worldPosition.clone();
-        let newPosition = new Vec3( startPos.x, startPos.y - offsetBounce, startPos.z );
-        if ( this.node )
-        {
-            tween( this.node )
-                .to( 0.08, { worldPosition: newPosition }, { easing: 'sineIn' } )
-                .to( 0.8, { worldPosition: startPos }, { easing: 'elasticOut' } )
-                .start();
-        }
-    }
-
     //#region Collect
     public Collect ( pos: Vec3 ): void
     {

@@ -2,6 +2,7 @@ import { _decorator, Enum, Game, game, Input, input } from 'cc';
 import super_html_playable from './super_html_playable';
 import { SingletonInSceneComponent } from '../Pattern/SingletonInSceneComponent';
 import { TrackingManager } from './Tracking/TrackingManager';
+import { AudioSystem } from '../../../Script/Audio/AudioSystem';
 
 const { ccclass, property } = _decorator;
 
@@ -100,7 +101,7 @@ export class PlayableAdsManager extends SingletonInSceneComponent
             this.firstClicked = true;
             // Bật background Music sau lần đầu play PA. Đây là Policy của web nên bắt buộc phải follow.
             //AudioManager.instance.playBackgroundMusic();
-            //AudioSystem.instance.playBGMusic();
+            AudioSystem.instance.playBackgroundMusic();
         }
 
     }
