@@ -10,6 +10,7 @@ import { VariableConfig } from '../../Config/VariableConfig';
 import { ItemType } from './ItemTypeEnum';
 import { AudioSystem } from '../../Audio/AudioSystem';
 import { ParticleSpawnManager } from '../../Manager/ParticleSpawnManager';
+import { PickObjHandler } from '../../Interact/PickObjHandler';
 const { ccclass, property } = _decorator;
 
 /**
@@ -119,6 +120,8 @@ export class Item extends Component
     public pick (): boolean
     {
         AudioSystem.instance.playPickObj();
+        PickObjHandler.instance.spawnPickParticle( this.node );
+
         return this.stateMachine.changeState( ItemStateType.PICKED );
     }
     public drop (): boolean

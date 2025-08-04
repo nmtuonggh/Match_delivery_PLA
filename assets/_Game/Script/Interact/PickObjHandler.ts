@@ -50,7 +50,6 @@ export class PickObjHandler extends Component
         // this.stopPick(this.currentItem);
         if ( this.currentItem )
         {
-            this.spawnPickParticle( this.currentItem );
             this.currentItem.getComponent( Item ).moveToShelf();
         }
         this.currentItem = null;
@@ -86,7 +85,6 @@ export class PickObjHandler extends Component
                             this.currentItem = hitNode;
                             interactableObj.pick();
                             this.turnOnOutline( hitNode );
-
                         }
                         return;
                     }
