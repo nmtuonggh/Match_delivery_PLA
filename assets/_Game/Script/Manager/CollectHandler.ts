@@ -26,6 +26,7 @@ export class CollectHandler extends Component
         for ( let i = 0; i < shelfContainer.doneMoveCountCheck; i++ )
         {
             let obj = shelfContainer.listPickedItem[ i ];
+            if(obj.itemType !== item.itemType) continue;
             if ( obj.canNotCollect() ) continue;
             if ( i >= shelfContainer.doneMoveCountCheck - 2 ) continue;
             if ( shelfContainer.listPickedItem[ i + 1 ].canNotCollect() ||
