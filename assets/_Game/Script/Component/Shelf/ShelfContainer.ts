@@ -24,8 +24,8 @@ export class ShelfContainer extends Component
     public Camera: Camera = null;
     @property( Node )
     public canvas: Node = null;
-    @property(Node)
-    public pickupItemParrent : Node = null;
+    @property( Node )
+    public pickupItemParrent: Node = null;
     //#endregion
 
 
@@ -64,10 +64,10 @@ export class ShelfContainer extends Component
     //#region IsFullSlot
     public isFullSlot (): boolean
     {
-        console.log("Current picked active count: " + this.currentPickedActiveCount);
-        console.log("List shelf slots length: " + this.listShelfSlots.length);
+        console.log( "Current picked active count: " + this.currentPickedActiveCount );
+        console.log( "List shelf slots length: " + this.listShelfSlots.length );
         return this.currentPickedActiveCount >= this.listShelfSlots.length;
-    }   
+    }
     //#endregion
     //#region GetSlotAndCheckMatch
     public getSlotAndCheckMatch ( item: Item ): { index: number, canMatched: boolean }
@@ -115,20 +115,20 @@ export class ShelfContainer extends Component
     }
     //#endregion
     //#region Bounce
-    public async bounceSlot ( boundcePower: number, index: number , item: Item): Promise<void>
+    public async bounceSlot ( boundcePower: number, index: number, item: Item ): Promise<void>
     {
-        if(index < 0 || index >= this.listShelfRender.length) return;
-        let shakeForce = boundcePower ;
+        if ( index < 0 || index >= this.listShelfRender.length ) return;
+        let shakeForce = boundcePower;
         let render = this.listShelfRender[ index ];
         let renderStartPos = this.listShelfRenderStartPos[ index ];
         //Tween.stopAllByTarget(render);
-        item.node.setParent(render, true);
+        item.node.setParent( render, true );
         //item.node.eulerAngles = new Vec3(10,180,0);
-        let downPos = renderStartPos.clone().add3f(0,-shakeForce,0);
+        let downPos = renderStartPos.clone().add3f( 0, -shakeForce, 0 );
         let upPos = renderStartPos.clone();
-        tween(render)
-            .to(VariableConfig.TIME_TILE_ARRIVED,{worldPosition:downPos},{easing:'sineIn'})
-            .to(VariableConfig.TIME_TILE_BOUNCE,{worldPosition:upPos},{easing:'elasticOut'})
+        tween( render )
+            .to( VariableConfig.TIME_TILE_ARRIVED, { worldPosition: downPos }, { easing: 'sineIn' } )
+            .to( VariableConfig.TIME_TILE_BOUNCE, { worldPosition: upPos }, { easing: 'elasticOut' } )
             .start();
     }
     //#endregion

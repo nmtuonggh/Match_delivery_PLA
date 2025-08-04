@@ -9,6 +9,7 @@ import { BezierTweenWorld } from '../../Tween/TweenExtension';
 import { VariableConfig } from '../../Config/VariableConfig';
 import { ItemType } from './ItemTypeEnum';
 import { AudioSystem } from '../../Audio/AudioSystem';
+import { ParticleSpawnManager } from '../../Manager/ParticleSpawnManager';
 const { ccclass, property } = _decorator;
 
 /**
@@ -42,7 +43,7 @@ export class Item extends Component
     public bouncePromise: Promise<void> | null = null;
     public pickupTween: Tween<any> | null = null; // Thêm để track pickup animation
     public sortSequence: Tween<Node> | null = null;
-    @property( { type: Number , readonly: true} )
+    @property( { type: Number, readonly: true } )
     public pickupIndexLogic: number = 0;
     public pickupIndexStatus: number = 0;
     public pickupNum: number = 0;
@@ -68,7 +69,7 @@ export class Item extends Component
     //#region Private fields
     private stateMachine: StateMachine;
     private _isPickable: boolean = true;
-    private upCollectionOffset: Vec3 = new Vec3( 0, 1, 0 );
+    private upCollectionOffset: Vec3 = new Vec3( 0, 5, 0 );
     private sortAnimationPromises: Promise<void>[] = [];
     //#endregion
 
@@ -183,7 +184,7 @@ export class Item extends Component
                     ( startPos.z + targetPos.z ) / 2
                 );
 
-                console.log("Sort item" + this.node.name + " to index " + i1);
+                console.log( "Sort item" + this.node.name + " to index " + i1 );
                 const animationPromise = BezierTweenWorld( this.node, VariableConfig.SORT_TIME, startPos, controlPoint, targetPos, delay )
                     .promise.then( () =>
                     {
@@ -237,7 +238,7 @@ export class Item extends Component
     public getSlotPosition ( index: number ): Vec3
     {
         //debugger;
-        return ShelfContainer.instance.getSlotPos(index);
+        return ShelfContainer.instance.getSlotPos( index );
     }
 
     public bounceItem ( boundcePower: number ): void
@@ -276,35 +277,29 @@ export class Item extends Component
         let upPos = new Vec3( this.node.worldPosition.x, pos.y + this.upCollectionOffset.y, this.node.worldPosition.z );
         let xPos = new Vec3( pos.x, pos.y + this.upCollectionOffset.y, pos.z )
         tween( this.node )
-            .to( VariableConfig.COLLECT_TIME, { worldPosition: upPos }, { easing: 'sineOut' } )
+            .to( VariableConfig.COLLECT_TIME / 2, { worldPosition: upPos }, { easing: 'sineOut' } )
+            .to( VariableConfig.COLLECT_TIME / 2, { worldPosition: xPos }, { easing: 'backIn' } )
             .call( () => { this.node.active = false; } )
             .start();
-        tween( this.node )
-            .to( VariableConfig.COLLECT_TIME, { worldPosition: xPos }, { easing: 'backIn' } )
-            .start();
-
-        // function backInWithOvershoot ( t: number, overshoot: number = 5 ): number
-        // {
-        //     const c1 = 1.70158 * overshoot; // Tăng overshoot
-        //     const c3 = c1 + 1;
-        //     return c3 * t * t * t - c1 * t * t;
-        // }
-        // tween( this.node )
-        //     .to( VariableConfig.COLLECT_TIME, { worldPosition: xPos }, {
-        //         easing: ( t: number ) => backInWithOvershoot( t, 5 )
-        //     } )
-        //     .start();
     }
     //#endregion
 
     //#region MidCollected
     public midCollected (): void
     {
+        let startPos = this.node.worldPosition.clone();
         Tween.stopAllByTarget( this.node );
         tween( this.node )
-            .to( 0.1, { scale: new Vec3( VariableConfig.onShelftScale.x * 1.5, VariableConfig.onShelftScale.y * 1.5, VariableConfig.onShelftScale.z * 1.5 ) }, { easing: 'sineOut' } )
+            .to( 0.1, { scale: new Vec3( VariableConfig.onShelftScale.x * 1.2, VariableConfig.onShelftScale.y * 1.2, VariableConfig.onShelftScale.z * 1.2 ) }, { easing: 'sineOut' } )
             .to( 0.05, { scale: VariableConfig.onShelftScale }, { easing: 'cubicIn' } )
-            .call( () => { this.node.active = false; } )
+            .call( () =>
+            {
+                this.node.active = false;
+                ParticleSpawnManager.instance.spawn3DParticle( 0, new Vec3( startPos.x, startPos.y + 5, startPos.z ) );
+            } )
+            .start();
+        tween( this.node )
+            .to( 0.15, { worldPosition: new Vec3( startPos.x, startPos.y + 5, startPos.z ) }, { easing: 'sineOut' } )
             .start();
     }
     //#endregion
