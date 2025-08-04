@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, tween, Vec3, Tween, TweenSystem, Prefab, instantiate, Canvas, UITransform, view, Camera, Vec2, director } from 'cc';
+import { _decorator, Component, Node, tween, Vec3, Tween, TweenSystem, Prefab, instantiate, Canvas, UITransform, view, Camera, Vec2, director, log } from 'cc';
 import { ShelfSlot } from './ShelfSlot';
 import { Item } from '../Object/Item';
 import { EventListener } from '../../GameEvent/EventListener';
@@ -104,6 +104,7 @@ export class ShelfContainer extends Component
     //#region SortItemOnShelf
     public async sortItemOnShelf (): Promise<void>
     {
+        log("Sort item on shelf " + this.listPickedItem.map(item => item.node.name + " | "));
         window.this = this;
         for ( let i = this.currentPickedTotalCount - 1; i >= 0; i-- )
         {

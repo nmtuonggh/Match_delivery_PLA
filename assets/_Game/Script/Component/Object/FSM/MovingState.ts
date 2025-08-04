@@ -52,6 +52,7 @@ export class MovingState implements IState
         
 
         // if exist on bar -> insert behind it, else just stick it to bottom
+        
         shelfContainer.currentPickedTotalCount += 1;
         let pickupIndex = resultIndex + 1;
 

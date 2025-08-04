@@ -1,4 +1,4 @@
-import { _decorator, Component, Enum, Node, RigidBody, Tween, tween, Vec3, Quat } from 'cc';
+import { _decorator, Component, Enum, Node, RigidBody, Tween, tween, Vec3, Quat, debug, log } from 'cc';
 import { IdleState } from './FSM/IdleState';
 import { PickedState } from './FSM/PickedState';
 import { MovingState } from './FSM/MovingState';
@@ -57,6 +57,7 @@ export class Item extends Component
     //#endregion
 
     //#region Flag Fields
+    @property( { readonly: true } )
     public isDead: boolean = false;
     public isCollected: boolean = false;
     public wasPicked: boolean = false;
@@ -165,13 +166,16 @@ export class Item extends Component
         this.pickupIndexStatus = newIndexPos;
         //Tween.stopAllByTarget( this.node );
 
+        if(this.itemType === ItemType.Lemon)
+        {
+            //console.log("Sort lemon at index " + this.pickupIndexLogic + " to index " + newIndexPos);
+        }
         //hopping to new pos
         let currentIndex = this.pickupIndexLogic;
         let delay = newIndexPos > this.pickupIndexLogic ? 0 : this.pickupIndexLogic * 0.05;
 
         // Tạo mảng để lưu tất cả các promises từ BezierTweenWorld
         this.sortAnimationPromises = [];
-
         if ( newIndexPos < this.pickupIndexLogic )
         {
             for ( let i = currentIndex - 1; i >= newIndexPos; i-- )
@@ -188,7 +192,7 @@ export class Item extends Component
                     ( startPos.z + targetPos.z ) / 2
                 );
 
-                console.log( "Sort item" + this.node.name + " to index " + i1 );
+                //console.log( "Sort item" + this.node.name + " to index " + i1 );
                 const animationPromise = BezierTweenWorld( this.node, VariableConfig.SORT_TIME, startPos, controlPoint, targetPos, delay )
                     .promise.then( () =>
                     {
@@ -228,12 +232,13 @@ export class Item extends Component
 
         this.sortPromise = Promise.all( this.sortAnimationPromises ).then( () => 
         {
+            //console.log("Sort item " + this.node.name + " to index " + newIndexPos);
             this.pickupIndexLogic = newIndexPos;
             // tween( this.node )
             // .to( 0, { worldPosition: this.pickupPos } )
             // .start();
             this.sortAnimationPromises = [];
-            this.sortPromise = null;
+            // this.sortPromise = null;
         } );
     }
 

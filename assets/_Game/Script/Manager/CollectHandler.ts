@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Vec3 } from 'cc';
+import { _decorator, Component, error, log, Node, Vec3 } from 'cc';
 import { Item } from '../Component/Object/Item';
 import { ShelfContainer } from '../Component/Shelf/ShelfContainer';
 import { VariableConfig } from '../Config/VariableConfig';
@@ -30,12 +30,10 @@ export class CollectHandler extends Component
             if ( i >= shelfContainer.doneMoveCountCheck - 2 ) continue;
             if ( shelfContainer.listPickedItem[ i + 1 ].canNotCollect() ||
                 shelfContainer.listPickedItem[ i + 2 ].canNotCollect() ) continue;
-
             item.isCollected = true;
             shelfContainer.listPickedItem[ i + 1 ].isCollected = true;
             shelfContainer.listPickedItem[ i + 2 ].isCollected = true;
             this.Collect( i + 1 );
-            
         }
     }
 
@@ -46,12 +44,21 @@ export class CollectHandler extends Component
 
     public async IECollect ( centerIndex: number, callback: ( item: Item ) => void ): Promise<void>
     {
+        log( "%cI: " + centerIndex, "color: green" )
         let shelfContainer = ShelfContainer.instance;
+
+        //loai 3 item nay ra khoi , llloai theo object  
+        
 
         let centerPos = shelfContainer.getSlotPos( centerIndex );
         let matchItem0 = shelfContainer.listPickedItem[ centerIndex - 1 ];
         let matchItem1 = shelfContainer.listPickedItem[ centerIndex ];
         let matchItem2 = shelfContainer.listPickedItem[ centerIndex + 1 ];
+
+        shelfContainer.listPickedItem.splice( centerIndex - 1, 3 );
+        //log("%c" + shelfContainer.listPickedItem.map(item => item.node.name + " | "), "color: violet")
+        shelfContainer.currentPickedTotalCount -= 3;
+        shelfContainer.doneMoveCountCheck -= 3;
 
         await this.delay( VariableConfig.DELAY_COLLECT_TIME );
 
@@ -66,10 +73,7 @@ export class CollectHandler extends Component
         // matchItem2.node.active = false;
         matchItem1.midCollected();
 
-        //loai 3 item nay ra khoi , llloai theo object  
-        shelfContainer.listPickedItem.splice( centerIndex - 1, 3 );
-        shelfContainer.currentPickedTotalCount -= 3;
-        shelfContainer.doneMoveCountCheck -= 3;
+
 
         shelfContainer.sortItemOnShelf();
         callback( matchItem1 );
