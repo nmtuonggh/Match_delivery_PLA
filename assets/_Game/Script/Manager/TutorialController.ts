@@ -27,7 +27,6 @@ export class TutorialController extends Component
     @property( { type: Vec3 } )
     public offsetPos: Vec3 = new Vec3( -5, -5, 0 );
 
-    private stopTutorial: boolean = false;
     onLoad ()
     {
         TutorialController.instance = this;
@@ -39,18 +38,18 @@ export class TutorialController extends Component
         {
             this.handNode.setWorldPosition( this.targetNode.worldPosition );
         }
-        if ( PlayableAdsManager.Instance().firstClicked && !this.stopTutorial )
-        {
-            this.stopTutorial = true;
-            Tween.stopAllByTarget( this.handNode );
-            this.handNode.active = false;
-            Tween.stopAllByTarget( this.targetNode );
-            Tween.stopAllByTarget( this.matchNode1 );
-            Tween.stopAllByTarget( this.matchNode2 );
-            this.turnOffOutline( this.targetNode );
-            this.turnOffOutline( this.matchNode1 );
-            this.turnOffOutline( this.matchNode2 );
-        }
+    }
+
+    public stopShowTutorial (): void
+    {
+        Tween.stopAllByTarget( this.handNode );
+        this.handNode.active = false;
+        Tween.stopAllByTarget( this.targetNode );
+        Tween.stopAllByTarget( this.matchNode1 );
+        Tween.stopAllByTarget( this.matchNode2 );
+        this.turnOffOutline( this.targetNode );
+        this.turnOffOutline( this.matchNode1 );
+        this.turnOffOutline( this.matchNode2 );
     }
 
     protected start (): void

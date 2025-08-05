@@ -5,6 +5,12 @@ Tất cả thay đổi đáng chú ý sẽ được ghi lại trong file này.
 ## [Unreleased]
 
 ### Added
+- Logic tính tổng orderCount và kiểm tra current trong `ItemOderController`
+  - Thêm biến `totalOrderCount` để lưu tổng orderCount của tất cả ItemOder
+  - Thêm biến `halfTotalOrderCount` để lưu nửa tổng orderCount (chia đôi)
+  - Thêm biến `currentItemOnShelfCount` để đếm số lần onItemOnShelf được gọi
+  - Thêm phương thức `calculateTotalOrderCount()` để tính tổng và nửa tổng
+  - Cập nhật logic trong `onItemOnShelf()` để tăng current và log "xxx" khi vượt quá nửa tổng
 - `ParticleSpawnManager` - Hệ thống quản lý spawn particle 2D và 3D
   - Hỗ trợ spawn particle 2D với chuyển đổi world position sang UI position
   - Hỗ trợ spawn particle 3D tại vị trí world position
