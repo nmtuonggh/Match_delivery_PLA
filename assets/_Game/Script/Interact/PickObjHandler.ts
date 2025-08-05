@@ -19,7 +19,7 @@ export class PickObjHandler extends Component
     private currentItem: Node = null;
     private lastRaycastItem: Node = null; // Item cuối cùng được raycast kiểm tra
     private lastTouchEndTime: number = 0; // Thời gian lần touchend gần nhất
-    private minTouchInterval: number = 200; // Khoảng thời gian tối thiểu giữa touchend và touchstart tiếp theo (ms)
+    private minTouchInterval: number = 50; // Khoảng thời gian tối thiểu giữa touchend và touchstart tiếp theo (ms)
 
     public static instance: PickObjHandler;
 
@@ -40,8 +40,12 @@ export class PickObjHandler extends Component
     {
         const ray = this.createRay( event );
         this.checkRaycastHit( ray );
+        if ( !PlayableAdsManager.Instance().firstClicked )
+        {
+            TutorialController.instance.stopShowTutorial();
+        }
         PlayableAdsManager.Instance().ActionFirstClicked();
-        TutorialController.instance.stopShowTutorial();
+
     }
 
     onTouchMove ( event: EventTouch )
@@ -99,9 +103,9 @@ export class PickObjHandler extends Component
                     {
                         const currentTime = Date.now();
                         const timeSinceLastTouchEnd = currentTime - this.lastTouchEndTime;
-                       
-                        if ( this.currentItem !== hitNode 
-                            && timeSinceLastTouchEnd > this.minTouchInterval)
+
+                        if ( this.currentItem !== hitNode
+                            && timeSinceLastTouchEnd > this.minTouchInterval )
                         {
                             this.stopPick( this.currentItem );
                             this.currentItem = hitNode;

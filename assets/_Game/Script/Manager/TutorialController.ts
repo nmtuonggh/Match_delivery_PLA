@@ -1,6 +1,7 @@
 import { _decorator, Component, Material, MeshRenderer, Node, Tween, tween, Vec3 } from 'cc';
 import { PlayableAdsManager } from '../../PAIkame/base-script/PlayableAds/PlayableAdsManager';
 import { Item } from '../Component/Object/Item';
+import { BlinkingOutline } from '../Component/Effect/BlinkingOutline';
 const { ccclass, property } = _decorator;
 
 @ccclass( 'TutorialController' )
@@ -27,6 +28,7 @@ export class TutorialController extends Component
     @property( { type: Vec3 } )
     public offsetPos: Vec3 = new Vec3( -5, -5, 0 );
 
+    private firstClicked: boolean = false;
     onLoad ()
     {
         TutorialController.instance = this;
@@ -38,10 +40,15 @@ export class TutorialController extends Component
         {
             this.handNode.setWorldPosition( this.targetNode.worldPosition );
         }
+        if ( this.handNode.active === true && this.firstClicked )
+        {
+            this.handNode.active = false;
+        }
     }
 
     public stopShowTutorial (): void
     {
+        this.firstClicked = true;
         Tween.stopAllByTarget( this.handNode );
         this.handNode.active = false;
         Tween.stopAllByTarget( this.targetNode );
@@ -78,29 +85,35 @@ export class TutorialController extends Component
 
     turnOnOutline (node: Node): void
     {
-        let listMesh = node.getComponent( Item ).getComponentsInChildren( MeshRenderer );
-        for ( let i = 0; i < listMesh.length; i++ )
-        {
-            tween( listMesh[ i ] )
-                .set( { material: this.outlineMaterial } )
-                .delay( 1.5 )
-                .set( { material: this.normalMaterial } )
-                .delay( 1.5 )
-                .union()
-                .repeatForever()
-                .start();
+        // Kiểm tra xem node đã có BlinkingOutline component chưa
+        let blinkingOutline = node.getComponent(BlinkingOutline);
+        
+        if (!blinkingOutline) {
+            // Thêm BlinkingOutline component nếu chưa có
+            blinkingOutline = node.addComponent(BlinkingOutline);
+            blinkingOutline.setMaterials(this.outlineMaterial, this.normalMaterial);
         }
+        
+        // Bắt đầu hiệu ứng nhấp nháy
+        blinkingOutline.startBlinking();
     }
 
     turnOffOutline (node: Node): void
     {
-        let listMesh = node.getComponent( Item ).getComponentsInChildren( MeshRenderer );
-        for ( let i = 0; i < listMesh.length; i++ )
-        {
-            Tween.stopAllByTarget( listMesh[ i ] );
-            listMesh[ i ].material = this.normalMaterial;
+        // Dừng tất cả tween cũ (để tương thích với code cũ)
+        //Tween.stopAllByTarget(node);
+        
+        // Sử dụng BlinkingOutline component để dừng hiệu ứng
+        const blinkingOutline = node.getComponent(BlinkingOutline);
+        if (blinkingOutline) {
+            blinkingOutline.stopBlinking();
+        } else {
+            // Fallback: set material trực tiếp nếu không có component
+            let listMesh = node.getComponent(Item).getComponentsInChildren(MeshRenderer);
+            for (let i = 0; i < listMesh.length; i++) {
+                listMesh[i].material = this.normalMaterial;
+            }
         }
-
     }
 }
 
