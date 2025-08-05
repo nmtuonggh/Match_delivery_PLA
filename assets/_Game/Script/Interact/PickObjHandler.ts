@@ -3,6 +3,7 @@ import { Item, ItemType } from '../Component/Object/Item';
 import { ShelfContainer } from '../Component/Shelf/ShelfContainer';
 import { ParticleSpawnManager } from '../Manager/ParticleSpawnManager';
 import { PlayableAdsManager } from '../../PAIkame/base-script/PlayableAds/PlayableAdsManager';
+import { TutorialController } from '../Manager/TutorialController';
 const { ccclass, property } = _decorator;
 
 @ccclass( 'PickObjHandler' )
@@ -40,6 +41,7 @@ export class PickObjHandler extends Component
         const ray = this.createRay( event );
         this.checkRaycastHit( ray );
         PlayableAdsManager.Instance().ActionFirstClicked();
+        TutorialController.instance.stopShowTutorial();
     }
 
     onTouchMove ( event: EventTouch )

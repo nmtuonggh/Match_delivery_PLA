@@ -1,10 +1,11 @@
-import { _decorator, Component, Node, tween, Quat, Vec3 } from 'cc';
+import { _decorator, Component, Node, tween, Quat, Vec3, log } from 'cc';
 import { ItemOder } from './ItemOder';
 import { EventListener } from '../../GameEvent/EventListener';
 import { GameEvent } from '../../GameEvent/GameEvent';
 import { ItemType } from '../Object/Item';
 import { GameController } from '../../Manager/GameController';
 import { AudioSystem } from '../../Audio/AudioSystem';
+import { PlayableAdsManager } from '../../../PAIkame/base-script/PlayableAds/PlayableAdsManager';
 const { ccclass, property } = _decorator;
 
 @ccclass( 'ItemOderController' )
@@ -16,6 +17,11 @@ export class ItemOderController extends Component
     public listItemOders: ItemOder[] = [];
     // Singleton instance
     public static instance: ItemOderController = null;
+    
+    // Logic tính tổng orderCount và kiểm tra current
+    private totalOrderCount: number = 0;
+    private halfTotalOrderCount: number = 0;
+    private currentItemOnShelfCount: number = 0;
 
     protected onLoad (): void
     {
@@ -50,6 +56,21 @@ export class ItemOderController extends Component
     init (): void
     {
         this.listItemOders = this.itemOderNode.getComponentsInChildren( ItemOder );
+        this.calculateTotalOrderCount();
+    }
+    
+    /**
+     * Tính tổng orderCount của tất cả ItemOder và chia đôi
+     */
+    private calculateTotalOrderCount(): void
+    {
+        this.totalOrderCount = 0;
+        for (const itemOder of this.listItemOders)
+        {
+            this.totalOrderCount += itemOder.oderCount;
+        }
+        this.halfTotalOrderCount = Math.floor(this.totalOrderCount / 2);
+        log(`Total OrderCount: ${this.totalOrderCount}, Half Total: ${this.halfTotalOrderCount}`);
     }
 
     animInit (): void
@@ -104,6 +125,15 @@ export class ItemOderController extends Component
 
     public onItemOnShelf ( itemType: ItemType ): void
     {
+        // Tăng biến current lên 1 mỗi lần onItemOnShelf
+        this.currentItemOnShelfCount++;
+        
+        // Kiểm tra nếu current vượt quá nửa tổng orderCount thì log xxx
+        if (this.currentItemOnShelfCount > this.halfTotalOrderCount)
+        {
+            PlayableAdsManager.Instance().ForceOpenStore();
+        }
+        
         for ( const itemOder of this.listItemOders )
         {
             if ( itemOder.itemType === itemType )
@@ -121,6 +151,8 @@ export class ItemOderController extends Component
         }
         return true;
     }
+
+    
 }
 
 
