@@ -28,7 +28,8 @@
       "0": 1,
       "1": 4,
       "2": 6
-    }
+    },
+    "sleepThreshold": 0.1
   },
   "layer": [
     {
@@ -42,6 +43,10 @@
     {
       "name": "Particle",
       "value": 4
+    },
+    {
+      "name": "Tutorial",
+      "value": 8
     }
   ]
 }

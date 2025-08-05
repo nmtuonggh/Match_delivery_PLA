@@ -93,6 +93,7 @@ export class Item extends Component
     {
         let physic = this.getComponent(RigidBody);
         physic.mass = 10;
+        physic.linearDamping = 0.5;
         this.initStateMachine();
         this.startScale = new Vec3( 2, 2, 2 );
     }
