@@ -18,7 +18,7 @@ export class PickObjHandler extends Component
     private currentItem: Node = null;
     private lastRaycastItem: Node = null; // Item cuối cùng được raycast kiểm tra
     private lastTouchEndTime: number = 0; // Thời gian lần touchend gần nhất
-    private minTouchInterval: number = 500; // Khoảng thời gian tối thiểu giữa touchend và touchstart tiếp theo (ms)
+    private minTouchInterval: number = 200; // Khoảng thời gian tối thiểu giữa touchend và touchstart tiếp theo (ms)
 
     public static instance: PickObjHandler;
 
@@ -37,16 +37,6 @@ export class PickObjHandler extends Component
 
     onTouchStart ( event: EventTouch )
     {
-        // Kiểm tra thời gian từ touchend gần nhất đến touchstart hiện tại để tránh spam
-        const currentTime = Date.now();
-        const timeSinceLastTouchEnd = currentTime - this.lastTouchEndTime;
-        
-        if ( this.lastTouchEndTime > 0 && timeSinceLastTouchEnd < this.minTouchInterval )
-        {
-            // Nếu thời gian quá ngắn, bỏ qua touchstart này để tránh spam
-            return;
-        }
-        
         const ray = this.createRay( event );
         this.checkRaycastHit( ray );
         PlayableAdsManager.Instance().ActionFirstClicked();
@@ -76,7 +66,7 @@ export class PickObjHandler extends Component
             }
         }
         this.currentItem = null;
-        
+
         // Ghi lại thời gian touchend để kiểm tra spam cho lần touchstart tiếp theo
         this.lastTouchEndTime = Date.now();
     }
@@ -93,7 +83,7 @@ export class PickObjHandler extends Component
         if ( PhysicsSystem.instance )
         {
             const maxDistance = 100; // Khoảng cách tối đa cho raycast
-            const mask = 1 << 2; // Bật tất cả các layer 
+            const mask = 1 << 2;
             if ( PhysicsSystem.instance.raycastClosest( ray, mask, maxDistance, false ) )
             {
                 const result = PhysicsSystem.instance.raycastClosestResult;
@@ -105,7 +95,11 @@ export class PickObjHandler extends Component
 
                     if ( interactableObj )
                     {
-                        if ( this.currentItem !== hitNode )
+                        const currentTime = Date.now();
+                        const timeSinceLastTouchEnd = currentTime - this.lastTouchEndTime;
+                       
+                        if ( this.currentItem !== hitNode 
+                            && timeSinceLastTouchEnd > this.minTouchInterval)
                         {
                             this.stopPick( this.currentItem );
                             this.currentItem = hitNode;

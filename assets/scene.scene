@@ -4701,7 +4701,7 @@
     "propertyPath": [
       "oderCount"
     ],
-    "value": 15
+    "value": 12
   },
   {
     "__type__": "cc.TargetInfo",
@@ -4970,7 +4970,7 @@
     "propertyPath": [
       "oderCount"
     ],
-    "value": 18
+    "value": 9
   },
   {
     "__type__": "CCPropertyOverrideInfo",
@@ -5201,7 +5201,7 @@
     "propertyPath": [
       "oderCount"
     ],
-    "value": 21
+    "value": 18
   },
   {
     "__type__": "CCPropertyOverrideInfo",

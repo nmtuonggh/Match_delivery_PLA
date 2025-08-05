@@ -45,6 +45,8 @@ export class TutorialController extends Component
             Tween.stopAllByTarget( this.handNode );
             this.handNode.active = false;
             Tween.stopAllByTarget( this.targetNode );
+            Tween.stopAllByTarget( this.matchNode1 );
+            Tween.stopAllByTarget( this.matchNode2 );
             this.turnOffOutline( this.targetNode );
             this.turnOffOutline( this.matchNode1 );
             this.turnOffOutline( this.matchNode2 );
@@ -96,8 +98,10 @@ export class TutorialController extends Component
         let listMesh = node.getComponent( Item ).getComponentsInChildren( MeshRenderer );
         for ( let i = 0; i < listMesh.length; i++ )
         {
+            Tween.stopAllByTarget( listMesh[ i ] );
             listMesh[ i ].material = this.normalMaterial;
         }
+
     }
 }
 
